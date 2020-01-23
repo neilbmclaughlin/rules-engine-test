@@ -1,6 +1,17 @@
 const moment = require('moment')
 const RuleEngine = require('json-rules-engine')
 
+const getBasicParcels = () => {
+  return [
+    {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [],
+      previousActions: []
+    }
+  ]
+}
+
 const getParcels = () => {
   return [
     {
@@ -30,9 +41,9 @@ const getEngine = (parcels, rules) => {
   const getParcelFact = async (params, almanac) => {
     const parcelRef = await almanac.factValue('parcelRef')
     const parcel = parcels.filter((p) => p.parcelRef === parcelRef)[0]
-    const perimeterFeatureTotal = parcel.perimeterFeatures
-      .map((f) => f.perimeter)
-      .reduce((total, p) => total + p)
+    const perimeterFeatureTotal = parcel.perimeterFeatures.length > 0
+      ? (parcel.perimeterFeatures.map((f) => f.perimeter).reduce((total, p) => total + p))
+      : 0
     const dateOfLastAction = moment.max(parcel.previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))
     const yearsSinceLastAction = moment().diff(dateOfLastAction, 'years', true)
     parcel.yearsSinceLastAction = yearsSinceLastAction
@@ -142,6 +153,14 @@ describe('AdjustedPerimeter rule', () => {
       ]
     }
   }
+
+  test('When there are no perimeter features and claimed perimeter equal to perimeter return withinAdjustedPerimeter event', async () => {
+    const engine = getEngine(getBasicParcels(), [rule])
+    const result = await engine.run({ parcelRef: 'PR123', claimedPerimeter: 40 })
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('withinAdjustedPerimeter')
+  })
 
   test('Claimed perimeter less than adjusted perimeter should return withinAdjustedPerimeter event', async () => {
     const engine = getEngine(getParcels(), [rule])
