@@ -1,0 +1,43 @@
+{
+  "name": "rules-engine-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "pretest": "npm run lint",
+    "lint": "standard",
+    "test": "jest",
+    "test:watch": "nodemon --inspect=0.0.0.0 --ext js --legacy-watch --exec npm test"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^25.1.0",
+    "nodemon": "^2.0.2",
+    "standard": "^14.3.1"
+  },
+  "standard": {
+    "globals": [
+      "describe",
+      "beforeEach",
+      "expect",
+      "fail",
+      "test",
+      "afterEach",
+      "jest",
+      "beforeAll",
+      "afterAll"
+    ]
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/test-output/**"
+    ]
+  },
+  "dependencies": {
+    "json-rules-engine": "^5.0.2"
+  }
+}
