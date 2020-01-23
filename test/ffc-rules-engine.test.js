@@ -37,13 +37,17 @@ const getParcels = () => {
   ]
 }
 
+const getPerimeterFeaturesSum = (perimeterFeatures) => {
+  return perimeterFeatures.length > 0
+    ? (perimeterFeatures.map((f) => f.perimeter).reduce((total, p) => total + p))
+    : 0
+}
+
 const getEngine = (parcels, rules) => {
   const getParcelFact = async (params, almanac) => {
     const parcelRef = await almanac.factValue('parcelRef')
     const parcel = parcels.filter((p) => p.parcelRef === parcelRef)[0]
-    const perimeterFeatureTotal = parcel.perimeterFeatures.length > 0
-      ? (parcel.perimeterFeatures.map((f) => f.perimeter).reduce((total, p) => total + p))
-      : 0
+    const perimeterFeatureTotal = getPerimeterFeaturesSum(parcel.perimeterFeatures)
     if (parcel.previousActions.length > 0) {
       const dateOfLastAction = moment.max(parcel.previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))
       parcel.yearsSinceLastAction = moment().diff(dateOfLastAction, 'years', true)
