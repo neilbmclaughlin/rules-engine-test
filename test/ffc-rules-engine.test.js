@@ -1,3 +1,4 @@
+const moment = require('moment')
 const RuleEngine = require('json-rules-engine')
 
 const getParcels = () => {
@@ -9,6 +10,16 @@ const getParcels = () => {
         {
           type: 'lake',
           perimeter: 15
+        }
+      ],
+      previousActions: [
+        {
+          date: '2013-07-03',
+          identifier: 'XYZ action'
+        },
+        {
+          date: '2017-04-28',
+          identifier: 'XYZ action'
         }
       ]
     }
@@ -22,6 +33,9 @@ const getEngine = (parcels, rules) => {
     const perimeterFeatureTotal = parcel.perimeterFeatures
       .map((f) => f.perimeter)
       .reduce((total, p) => total + p)
+    const dateOfLastAction = moment.max(parcel.previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))
+    const yearsSinceLastAction = moment().diff(dateOfLastAction, 'years', true)
+    parcel.yearsSinceLastAction = yearsSinceLastAction
     parcel.adjustedPerimeter = parcel.perimeter - perimeterFeatureTotal
     return parcel
   }
@@ -32,6 +46,43 @@ const getEngine = (parcels, rules) => {
   engine.addFact('parcel', getParcelFact)
   return engine
 }
+
+describe('No actions in last 5 years rule', () => {
+  const rule = {
+    event: {
+      type: 'noActionsInLastFiveYears'
+    },
+    conditions: {
+      all: [
+        {
+          fact: 'parcel',
+          path: '$.yearsSinceLastAction',
+          operator: 'greaterThan',
+          value: {
+            fact: 'actionYearsThreshold'
+          }
+        }
+      ]
+    }
+  }
+  test('Passes when last action was more than 2 years ago', async () => {
+    const engine = getEngine(getParcels(), [rule])
+    const result = await engine.run({
+      parcelRef: 'PR123',
+      claimedPerimeter: 50,
+      actionYearsThreshold: 2
+    })
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('noActionsInLastFiveYears')
+  })
+  test('Fails when last action was more than 5 years ago', async () => {
+    const engine = getEngine(getParcels(), [rule])
+    const result = await engine.run({ parcelRef: 'PR123', claimedPerimeter: 50, actionYearsThreshold: 5 })
+
+    expect(result.events.length).toBe(0)
+  })
+})
 
 describe('Perimeter rule', () => {
   const rule = {

@@ -38,6 +38,7 @@
     ]
   },
   "dependencies": {
-    "json-rules-engine": "^5.0.2"
+    "json-rules-engine": "^5.0.2",
+    "moment": "^2.24.0"
   }
 }
