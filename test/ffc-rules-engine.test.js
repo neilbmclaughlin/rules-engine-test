@@ -44,9 +44,10 @@ const getEngine = (parcels, rules) => {
     const perimeterFeatureTotal = parcel.perimeterFeatures.length > 0
       ? (parcel.perimeterFeatures.map((f) => f.perimeter).reduce((total, p) => total + p))
       : 0
-    const dateOfLastAction = moment.max(parcel.previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))
-    const yearsSinceLastAction = moment().diff(dateOfLastAction, 'years', true)
-    parcel.yearsSinceLastAction = yearsSinceLastAction
+    if (parcel.previousActions.length > 0) {
+      const dateOfLastAction = moment.max(parcel.previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))
+      parcel.yearsSinceLastAction = moment().diff(dateOfLastAction, 'years', true)
+    }
     parcel.adjustedPerimeter = parcel.perimeter - perimeterFeatureTotal
     return parcel
   }
@@ -58,13 +59,13 @@ const getEngine = (parcels, rules) => {
   return engine
 }
 
-describe('No actions in last 5 years rule', () => {
+describe('No actions in last x years rule', () => {
   const rule = {
     event: {
       type: 'noActionsInLastFiveYears'
     },
     conditions: {
-      all: [
+      any: [
         {
           fact: 'parcel',
           path: '$.yearsSinceLastAction',
@@ -72,10 +73,27 @@ describe('No actions in last 5 years rule', () => {
           value: {
             fact: 'actionYearsThreshold'
           }
+        },
+        {
+          fact: 'parcel',
+          path: '$.yearsSinceLastAction',
+          operator: 'equal',
+          value: undefined
         }
       ]
     }
   }
+  test('Passes when there are no previous actions', async () => {
+    const engine = getEngine(getBasicParcels(), [rule])
+    const result = await engine.run({
+      parcelRef: 'PR123',
+      claimedPerimeter: 50,
+      actionYearsThreshold: 2
+    })
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('noActionsInLastFiveYears')
+  })
   test('Passes when last action was more than 2 years ago', async () => {
     const engine = getEngine(getParcels(), [rule])
     const result = await engine.run({
