@@ -14,7 +14,6 @@ const getEngine = (originalParcel, rules) => {
 
   const getToleranceUpperLimit = async (params, almanac) => {
     const tolerance = await almanac.factValue('tolerance')
-    const parcel = await almanac.factValue('parcel')
     return parcel.perimeter + tolerance
   }
 
