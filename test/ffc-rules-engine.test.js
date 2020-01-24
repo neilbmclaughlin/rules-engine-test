@@ -26,12 +26,13 @@ const getYearsSinceLastAction = (actionId, previousActions) => {
   return null
 }
 
-const getEngine = (parcel, rules) => {
+const getEngine = (originalParcel, rules) => {
   const getParcel = async (params, almanac) => {
+    // quick clone for immutability, parcels are JSON so this is OK
+    const parcel = JSON.parse(JSON.stringify(originalParcel))
     const actionId = await almanac.factValue('actionId')
-    const perimeterFeatureTotal = getPerimeterFeaturesSum(parcel.perimeterFeatures)
-    parcel.adjustedPerimeter = parcel.perimeter - perimeterFeatureTotal
     parcel.yearsSinceLastAction = getYearsSinceLastAction(actionId, parcel.previousActions)
+    parcel.adjustedPerimeter = parcel.perimeter - getPerimeterFeaturesSum(parcel.perimeterFeatures)
     return parcel
   }
 
