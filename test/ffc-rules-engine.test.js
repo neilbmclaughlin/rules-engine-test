@@ -7,8 +7,9 @@ const getPerimeterFeaturesSum = (perimeterFeatures) => {
     : 0
 }
 
-const getYearsSinceLastAction = (previousActions) => {
-  if (previousActions.length > 0) {
+const getYearsSinceLastAction = (actionId, previousActions) => {
+  console.log({ actionId, previousActions })
+  if (previousActions.filter((pa) => pa.identifier === actionId).length > 0) {
     const dateOfLastAction = moment.max(previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))
     return moment().diff(dateOfLastAction, 'years', true)
   }
@@ -17,9 +18,10 @@ const getYearsSinceLastAction = (previousActions) => {
 
 const getEngine = (parcel, rules) => {
   const getParcelFact = async (params, almanac) => {
+    const actionId = await almanac.factValue('actionId')
     const perimeterFeatureTotal = getPerimeterFeaturesSum(parcel.perimeterFeatures)
     parcel.adjustedPerimeter = parcel.perimeter - perimeterFeatureTotal
-    parcel.yearsSinceLastAction = getYearsSinceLastAction(parcel.previousActions)
+    parcel.yearsSinceLastAction = getYearsSinceLastAction(actionId, parcel.previousActions)
     return parcel
   }
   const engine = new RuleEngine.Engine()
@@ -63,6 +65,7 @@ describe('No actions in last x years rule', () => {
     }
     const engine = getEngine(parcel, [rule])
     const result = await engine.run({
+      actionId: 'FG1',
       claimedPerimeter: 50,
       actionYearsThreshold: 2
     })
@@ -70,7 +73,7 @@ describe('No actions in last x years rule', () => {
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('noActionsInTimePeriod')
   })
-  test('Passes when last action was in Apr 2017 and threshold check is 2 years', async () => {
+  test('Passes when matching last action was in Apr 2017 and threshold check is 2 years', async () => {
     const parcel = {
       parcelRef: 'PR123',
       perimeter: 75,
@@ -78,12 +81,13 @@ describe('No actions in last x years rule', () => {
       previousActions: [
         {
           date: '2017-04-28',
-          identifier: 'XYZ action'
+          identifier: 'FG1'
         }
       ]
     }
     const engine = getEngine(parcel, [rule])
     const result = await engine.run({
+      actionId: 'FG1',
       claimedPerimeter: 50,
       actionYearsThreshold: 2
     })
@@ -91,7 +95,7 @@ describe('No actions in last x years rule', () => {
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('noActionsInTimePeriod')
   })
-  test('Fails when last action was in Apr 2017 and threshold check is 5 years', async () => {
+  test('Fails when matching last action was in Apr 2017 and threshold check is 5 years', async () => {
     const parcel = {
       parcelRef: 'PR123',
       perimeter: 75,
@@ -99,14 +103,40 @@ describe('No actions in last x years rule', () => {
       previousActions: [
         {
           date: '2017-04-28',
-          identifier: 'XYZ action'
+          identifier: 'FG1'
         }
       ]
     }
     const engine = getEngine(parcel, [rule])
-    const result = await engine.run({ claimedPerimeter: 50, actionYearsThreshold: 5 })
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 50,
+      actionYearsThreshold: 5
+    })
 
     expect(result.events.length).toBe(0)
+  })
+  test('Passes when different last action was in Apr 2017 and threshold check is 5 years', async () => {
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [],
+      previousActions: [
+        {
+          date: '2017-04-28',
+          identifier: 'XYZ'
+        }
+      ]
+    }
+    const engine = getEngine(parcel, [rule])
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 50,
+      actionYearsThreshold: 5
+    })
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('noActionsInTimePeriod')
   })
 })
 
@@ -136,21 +166,30 @@ describe('Perimeter rule', () => {
   }
   test('Passes when claimed perimeter is less than actual perimeter', async () => {
     const engine = getEngine(parcel, [rule])
-    const result = await engine.run({ claimedPerimeter: 50 })
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 50
+    })
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('withinPerimeter')
   })
   test('Passes when claimed perimeter equals actual perimeter', async () => {
     const engine = getEngine(parcel, [rule])
-    const result = await engine.run({ claimedPerimeter: 75 })
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 75
+    })
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('withinPerimeter')
   })
   test('Fails when claimed perimeter is greater than actual perimeter', async () => {
     const engine = getEngine(parcel, [rule])
-    const result = await engine.run({ claimedPerimeter: 150 })
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 150
+    })
 
     expect(result.events.length).toBe(0)
   })
@@ -182,7 +221,10 @@ describe('AdjustedPerimeter rule', () => {
       previousActions: []
     }
     const engine = getEngine(parcel, [rule])
-    const result = await engine.run({ claimedPerimeter: 40 })
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 40
+    })
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('withinAdjustedPerimeter')
@@ -200,7 +242,10 @@ describe('AdjustedPerimeter rule', () => {
       previousActions: []
     }
     const engine = getEngine(parcel, [rule])
-    const result = await engine.run({ claimedPerimeter: 40 })
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 40
+    })
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('withinAdjustedPerimeter')
@@ -218,7 +263,10 @@ describe('AdjustedPerimeter rule', () => {
       previousActions: []
     }
     const engine = getEngine(parcel, [rule])
-    const result = await engine.run({ claimedPerimeter: 60 })
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 60
+    })
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('withinAdjustedPerimeter')
@@ -236,7 +284,10 @@ describe('AdjustedPerimeter rule', () => {
       previousActions: []
     }
     const engine = getEngine(parcel, [rule])
-    const result = await engine.run({ claimedPerimeter: 61 })
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 61
+    })
 
     expect(result.events.length).toBe(0)
   })
