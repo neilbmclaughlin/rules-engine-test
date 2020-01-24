@@ -1,80 +1,15 @@
 const moment = require('moment')
 const RuleEngine = require('json-rules-engine')
+const noActionsInTimePeriod = require('../rules/no-actions-in-time-period.json')
+const perimeter = require('../rules/perimeter.json')
+const tolerancePerimeter = require('../rules/tolerancePerimeter.json')
+const adjustedPerimeter = require('../rules/withinAdjustedPerimeter.json')
 
 const rules = {
-  noActionsInTimePeriod: {
-    event: {
-      type: 'noActionsInTimePeriod'
-    },
-    conditions: {
-      any: [
-        {
-          fact: 'parcel',
-          path: '$.yearsSinceLastAction',
-          operator: 'greaterThan',
-          value: {
-            fact: 'actionYearsThreshold'
-          }
-        },
-        {
-          fact: 'parcel',
-          path: '$.yearsSinceLastAction',
-          operator: 'equal',
-          value: undefined
-        }
-      ]
-    }
-  },
-  perimeter: {
-    event: {
-      type: 'withinPerimeter'
-    },
-    conditions: {
-      all: [
-        {
-          fact: 'parcel',
-          path: '$.perimeter',
-          operator: 'greaterThanInclusive',
-          value: {
-            fact: 'claimedPerimeter'
-          }
-        }
-      ]
-    }
-  },
-  tolerancePerimeter: {
-    event: {
-      type: 'withinTolerancePerimeter'
-    },
-    conditions: {
-      all: [
-        {
-          fact: 'toleranceUpperLimit',
-          operator: 'greaterThanInclusive',
-          value: {
-            fact: 'claimedPerimeter'
-          }
-        }
-      ]
-    }
-  },
-  adjustedPerimeter: {
-    event: {
-      type: 'withinAdjustedPerimeter'
-    },
-    conditions: {
-      all: [
-        {
-          fact: 'parcel',
-          path: '$.adjustedPerimeter',
-          operator: 'greaterThanInclusive',
-          value: {
-            fact: 'claimedPerimeter'
-          }
-        }
-      ]
-    }
-  }
+  noActionsInTimePeriod,
+  perimeter,
+  tolerancePerimeter,
+  adjustedPerimeter
 }
 
 const getPerimeterFeaturesSum = (perimeterFeatures) => {
@@ -88,7 +23,7 @@ const getYearsSinceLastAction = (actionId, previousActions) => {
     const dateOfLastAction = moment.max(previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))
     return moment().diff(dateOfLastAction, 'years', true)
   }
-  return undefined
+  return null
 }
 
 const getEngine = (parcel, rules) => {
@@ -357,7 +292,7 @@ describe('Combination rules', () => {
         }
       ]
     }
-    const engine = getEngine(parcel, [rules.perimeter, rules.noActionsInTimePeriod])
+    const engine = getEngine(parcel, [perimeter, rules.noActionsInTimePeriod])
     const result = await engine.run({
       actionId: 'FG1',
       claimedPerimeter: 50,
@@ -381,7 +316,7 @@ describe('Combination rules', () => {
         }
       ]
     }
-    const engine = getEngine(parcel, [rules.perimeter, rules.noActionsInTimePeriod])
+    const engine = getEngine(parcel, [perimeter, rules.noActionsInTimePeriod])
     const result = await engine.run({
       actionId: 'FG1',
       claimedPerimeter: 500,
@@ -403,7 +338,7 @@ describe('Combination rules', () => {
         }
       ]
     }
-    const engine = getEngine(parcel, [rules.perimeter, rules.noActionsInTimePeriod])
+    const engine = getEngine(parcel, [perimeter, rules.noActionsInTimePeriod])
     const result = await engine.run({
       actionId: 'FG1',
       claimedPerimeter: 50,

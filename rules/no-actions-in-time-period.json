@@ -1,0 +1,23 @@
+{
+  "event": {
+    "type": "noActionsInTimePeriod"
+  },
+  "conditions": {
+    "any": [
+      {
+        "fact": "parcel",
+        "path": "$.yearsSinceLastAction",
+        "operator": "greaterThan",
+        "value": {
+          "fact": "actionYearsThreshold"
+        }
+      },
+      {
+        "fact": "parcel",
+        "path": "$.yearsSinceLastAction",
+        "operator": "equal",
+        "value": null
+      }
+    ]
+  }
+}

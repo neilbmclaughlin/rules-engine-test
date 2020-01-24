@@ -1,0 +1,17 @@
+{
+  "event": {
+    "type": "withinAdjustedPerimeter"
+  },
+  "conditions": {
+    "all": [
+      {
+        "fact": "parcel",
+        "path": "$.adjustedPerimeter",
+        "operator": "greaterThanInclusive",
+        "value": {
+          "fact": "claimedPerimeter"
+        }
+      }
+    ]
+  }
+}
