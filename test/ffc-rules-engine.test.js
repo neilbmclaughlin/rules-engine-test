@@ -1,17 +1,4 @@
-const noActionsInTimePeriod = require('../rules/no-actions-in-time-period.json')
-const perimeter = require('../rules/perimeter.json')
-const tolerancePerimeter = require('../rules/tolerance-perimeter.json')
-const adjustedPerimeter = require('../rules/within-adjusted-perimeter.json')
-const notSSSI = require('../rules/not-sssi.json')
-const runEngine = require('../ffc-rules-engine')
-
-const rules = {
-  noActionsInTimePeriod,
-  perimeter,
-  tolerancePerimeter,
-  adjustedPerimeter,
-  notSSSI
-}
+const { runEngine, rules } = require('../ffc-rules-engine')
 
 describe('No actions in time period rule', () => {
   test('Passes when there are no previous actions', async () => {
@@ -284,7 +271,7 @@ describe('Combination rules', () => {
     }
     const result = await runEngine(
       parcel,
-      [perimeter, rules.noActionsInTimePeriod],
+      [rules.perimeter, rules.noActionsInTimePeriod],
       {
         actionId: 'FG1',
         claimedPerimeter: 50,
@@ -311,7 +298,7 @@ describe('Combination rules', () => {
     }
     const result = await runEngine(
       parcel,
-      [perimeter, rules.noActionsInTimePeriod],
+      [rules.perimeter, rules.noActionsInTimePeriod],
       {
         actionId: 'FG1',
         claimedPerimeter: 500,
@@ -336,7 +323,7 @@ describe('Combination rules', () => {
     }
     const result = await runEngine(
       parcel,
-      [perimeter, rules.noActionsInTimePeriod],
+      [rules.perimeter, rules.noActionsInTimePeriod],
       {
         actionId: 'FG1',
         claimedPerimeter: 50,

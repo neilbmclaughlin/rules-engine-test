@@ -1,5 +1,18 @@
 const moment = require('moment')
 const RuleEngine = require('json-rules-engine')
+const noActionsInTimePeriod = require('./rules/no-actions-in-time-period.json')
+const perimeter = require('./rules/perimeter.json')
+const tolerancePerimeter = require('./rules/tolerance-perimeter.json')
+const adjustedPerimeter = require('./rules/within-adjusted-perimeter.json')
+const notSSSI = require('./rules/not-sssi.json')
+
+const rules = {
+  noActionsInTimePeriod,
+  perimeter,
+  tolerancePerimeter,
+  adjustedPerimeter,
+  notSSSI
+}
 
 const cloneJsonObject = function (object) {
   // quick clone for immutability, parcels are JSON so this is OK
@@ -49,4 +62,7 @@ const runEngine = async (parcel, rules, options) => {
   return engine.run(options)
 }
 
-module.exports = runEngine
+module.exports = {
+  runEngine,
+  rules
+}
