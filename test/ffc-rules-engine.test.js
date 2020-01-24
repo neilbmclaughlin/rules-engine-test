@@ -1,6 +1,66 @@
 const moment = require('moment')
 const RuleEngine = require('json-rules-engine')
 
+const rules = {
+  noActionsInTimePeriod: {
+    event: {
+      type: 'noActionsInTimePeriod'
+    },
+    conditions: {
+      any: [
+        {
+          fact: 'parcel',
+          path: '$.yearsSinceLastAction',
+          operator: 'greaterThan',
+          value: {
+            fact: 'actionYearsThreshold'
+          }
+        },
+        {
+          fact: 'parcel',
+          path: '$.yearsSinceLastAction',
+          operator: 'equal',
+          value: undefined
+        }
+      ]
+    }
+  },
+  perimeter: {
+    event: {
+      type: 'withinPerimeter'
+    },
+    conditions: {
+      all: [
+        {
+          fact: 'parcel',
+          path: '$.perimeter',
+          operator: 'greaterThanInclusive',
+          value: {
+            fact: 'claimedPerimeter'
+          }
+        }
+      ]
+    }
+  },
+  adjustedPerimeter: {
+    event: {
+      type: 'withinAdjustedPerimeter'
+    },
+    conditions: {
+      all: [
+        {
+          fact: 'parcel',
+          path: '$.adjustedPerimeter',
+          operator: 'greaterThanInclusive',
+          value: {
+            fact: 'claimedPerimeter'
+          }
+        }
+      ]
+    }
+  }
+}
+
 const getPerimeterFeaturesSum = (perimeterFeatures) => {
   return perimeterFeatures.length > 0
     ? (perimeterFeatures.map((f) => f.perimeter).reduce((total, p) => total + p))
@@ -8,7 +68,6 @@ const getPerimeterFeaturesSum = (perimeterFeatures) => {
 }
 
 const getYearsSinceLastAction = (actionId, previousActions) => {
-  console.log({ actionId, previousActions })
   if (previousActions.filter((pa) => pa.identifier === actionId).length > 0) {
     const dateOfLastAction = moment.max(previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))
     return moment().diff(dateOfLastAction, 'years', true)
@@ -33,29 +92,7 @@ const getEngine = (parcel, rules) => {
 }
 
 describe('No actions in last x years rule', () => {
-  const rule = {
-    event: {
-      type: 'noActionsInTimePeriod'
-    },
-    conditions: {
-      any: [
-        {
-          fact: 'parcel',
-          path: '$.yearsSinceLastAction',
-          operator: 'greaterThan',
-          value: {
-            fact: 'actionYearsThreshold'
-          }
-        },
-        {
-          fact: 'parcel',
-          path: '$.yearsSinceLastAction',
-          operator: 'equal',
-          value: undefined
-        }
-      ]
-    }
-  }
+  const rule = rules.noActionsInTimePeriod
   test('Passes when there are no previous actions', async () => {
     const parcel = {
       parcelRef: 'PR123',
@@ -141,23 +178,7 @@ describe('No actions in last x years rule', () => {
 })
 
 describe('Perimeter rule', () => {
-  const rule = {
-    event: {
-      type: 'withinPerimeter'
-    },
-    conditions: {
-      all: [
-        {
-          fact: 'parcel',
-          path: '$.perimeter',
-          operator: 'greaterThanInclusive',
-          value: {
-            fact: 'claimedPerimeter'
-          }
-        }
-      ]
-    }
-  }
+  const rule = rules.perimeter
   const parcel = {
     parcelRef: 'PR123',
     perimeter: 75,
@@ -196,23 +217,7 @@ describe('Perimeter rule', () => {
 })
 
 describe('AdjustedPerimeter rule', () => {
-  const rule = {
-    event: {
-      type: 'withinAdjustedPerimeter'
-    },
-    conditions: {
-      all: [
-        {
-          fact: 'parcel',
-          path: '$.adjustedPerimeter',
-          operator: 'greaterThanInclusive',
-          value: {
-            fact: 'claimedPerimeter'
-          }
-        }
-      ]
-    }
-  }
+  const rule = rules.adjustedPerimeter
   test('Passes when there are no perimeter features and claimed perimeter less than perimeter', async () => {
     const parcel = {
       parcelRef: 'PR123',
