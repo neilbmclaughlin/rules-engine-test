@@ -1,7 +1,7 @@
 const noActionsInTimePeriod = require('../rules/no-actions-in-time-period.json')
 const perimeter = require('../rules/perimeter.json')
-const tolerancePerimeter = require('../rules/tolerancePerimeter.json')
-const adjustedPerimeter = require('../rules/withinAdjustedPerimeter.json')
+const tolerancePerimeter = require('../rules/tolerance-perimeter.json')
+const adjustedPerimeter = require('../rules/within-adjusted-perimeter.json')
 const notSSSI = require('../rules/not-sssi.json')
 const getEngine = require('../ffc-rules-engine')
 
