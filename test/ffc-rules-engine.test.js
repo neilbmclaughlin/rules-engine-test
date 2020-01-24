@@ -104,7 +104,7 @@ describe('Is not SSI Rule', () => {
       sssi: true
     }
     const engine = getEngine(parcel, [rules.notSSSI])
-    const result = await engine.run({ actionId: 'FG1' })
+    const result = await engine.run()
 
     expect(result.events.length).toBe(0)
   })
@@ -117,7 +117,7 @@ describe('Is not SSI Rule', () => {
       sssi: false
     }
     const engine = getEngine(parcel, [rules.notSSSI])
-    const result = await engine.run({ actionId: 'FG1' })
+    const result = await engine.run()
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('notSSSI')
@@ -134,7 +134,6 @@ describe('Perimeter rule', () => {
   test('Passes when claimed perimeter is less than actual perimeter', async () => {
     const engine = getEngine(parcel, [rules.perimeter])
     const result = await engine.run({
-      actionId: 'FG1',
       claimedPerimeter: 50
     })
 
@@ -144,7 +143,6 @@ describe('Perimeter rule', () => {
   test('Passes when claimed perimeter equals actual perimeter', async () => {
     const engine = getEngine(parcel, [rules.perimeter])
     const result = await engine.run({
-      actionId: 'FG1',
       claimedPerimeter: 75
     })
 
@@ -154,7 +152,6 @@ describe('Perimeter rule', () => {
   test('Fails when claimed perimeter is greater than actual perimeter', async () => {
     const engine = getEngine(parcel, [rules.perimeter])
     const result = await engine.run({
-      actionId: 'FG1',
       claimedPerimeter: 150
     })
 
@@ -172,7 +169,6 @@ describe('AdjustedPerimeter rule', () => {
     }
     const engine = getEngine(parcel, [rules.adjustedPerimeter])
     const result = await engine.run({
-      actionId: 'FG1',
       claimedPerimeter: 40
     })
 
@@ -193,7 +189,6 @@ describe('AdjustedPerimeter rule', () => {
     }
     const engine = getEngine(parcel, [rules.adjustedPerimeter])
     const result = await engine.run({
-      actionId: 'FG1',
       claimedPerimeter: 40
     })
 
@@ -214,7 +209,6 @@ describe('AdjustedPerimeter rule', () => {
     }
     const engine = getEngine(parcel, [rules.adjustedPerimeter])
     const result = await engine.run({
-      actionId: 'FG1',
       claimedPerimeter: 60
     })
 
@@ -235,7 +229,6 @@ describe('AdjustedPerimeter rule', () => {
     }
     const engine = getEngine(parcel, [rules.adjustedPerimeter])
     const result = await engine.run({
-      actionId: 'FG1',
       claimedPerimeter: 61
     })
 
@@ -253,7 +246,6 @@ describe('Perimeter tolerance rule', () => {
   test('Passes when claimed perimeter is less than actual perimeter (allowing for tolerance)', async () => {
     const engine = getEngine(parcel, [rules.tolerancePerimeter])
     const result = await engine.run({
-      actionId: 'FG1',
       claimedPerimeter: 76,
       tolerance: 2
     })
@@ -264,7 +256,6 @@ describe('Perimeter tolerance rule', () => {
   test('Fails when claimed perimeter is greater than actual perimeter (allowing for tolerance)', async () => {
     const engine = getEngine(parcel, [rules.tolerancePerimeter])
     const result = await engine.run({
-      actionId: 'FG1',
       claimedPerimeter: 78,
       tolerance: 2
     })

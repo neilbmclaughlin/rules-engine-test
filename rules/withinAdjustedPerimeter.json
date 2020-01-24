@@ -5,8 +5,7 @@
   "conditions": {
     "all": [
       {
-        "fact": "parcel",
-        "path": "$.adjustedPerimeter",
+        "fact": "adjustedPerimeter",
         "operator": "greaterThanInclusive",
         "value": {
           "fact": "claimedPerimeter"
