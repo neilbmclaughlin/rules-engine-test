@@ -4,12 +4,14 @@ const noActionsInTimePeriod = require('../rules/no-actions-in-time-period.json')
 const perimeter = require('../rules/perimeter.json')
 const tolerancePerimeter = require('../rules/tolerancePerimeter.json')
 const adjustedPerimeter = require('../rules/withinAdjustedPerimeter.json')
+const notSSSI = require('../rules/not-sssi.json')
 
 const rules = {
   noActionsInTimePeriod,
   perimeter,
   tolerancePerimeter,
-  adjustedPerimeter
+  adjustedPerimeter,
+  notSSSI
 }
 
 const getPerimeterFeaturesSum = (perimeterFeatures) => {
@@ -128,6 +130,36 @@ describe('No actions in time period rule', () => {
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('noActionsInTimePeriod')
+  })
+})
+
+describe('Is not SSI Rule', () => {
+  test('Fails when parcel is SSSI', async () => {
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [],
+      previousActions: [],
+      sssi: true
+    }
+    const engine = getEngine(parcel, [rules.notSSSI])
+    const result = await engine.run({ actionId: 'FG1' })
+
+    expect(result.events.length).toBe(0)
+  })
+  test('Passes when parcel is not SSSI', async () => {
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [],
+      previousActions: [],
+      sssi: false
+    }
+    const engine = getEngine(parcel, [rules.notSSSI])
+    const result = await engine.run({ actionId: 'FG1' })
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('notSSSI')
   })
 })
 

@@ -1,0 +1,15 @@
+{
+  "event": {
+    "type": "notSSSI"
+  },
+  "conditions": {
+    "all": [
+      {
+        "fact": "parcel",
+        "path": "$.sssi",
+        "operator": "equal",
+        "value": false
+      }
+    ]
+  }
+}
