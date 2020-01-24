@@ -42,6 +42,22 @@ const rules = {
       ]
     }
   },
+  tolerancePerimeter: {
+    event: {
+      type: 'withinTolerancePerimeter'
+    },
+    conditions: {
+      all: [
+        {
+          fact: 'toleranceUpperLimit',
+          operator: 'greaterThanInclusive',
+          value: {
+            fact: 'claimedPerimeter'
+          }
+        }
+      ]
+    }
+  },
   adjustedPerimeter: {
     event: {
       type: 'withinAdjustedPerimeter'
@@ -83,11 +99,18 @@ const getEngine = (parcel, rules) => {
     parcel.yearsSinceLastAction = getYearsSinceLastAction(actionId, parcel.previousActions)
     return parcel
   }
+
+  const getToleranceUpperLimit = async (params, almanac) => {
+    const tolerance = await almanac.factValue('tolerance')
+    const parcel = await almanac.factValue('parcel')
+    return parcel.perimeter + tolerance
+  }
   const engine = new RuleEngine.Engine()
   for (const rule of rules) {
     engine.addRule(rule)
   }
   engine.addFact('parcel', getParcelFact)
+  engine.addFact('toleranceUpperLimit', getToleranceUpperLimit)
   return engine
 }
 
@@ -285,6 +308,36 @@ describe('AdjustedPerimeter rule', () => {
     const result = await engine.run({
       actionId: 'FG1',
       claimedPerimeter: 61
+    })
+
+    expect(result.events.length).toBe(0)
+  })
+})
+
+describe('Perimeter tolerance rule', () => {
+  const parcel = {
+    parcelRef: 'PR123',
+    perimeter: 75,
+    perimeterFeatures: [],
+    previousActions: []
+  }
+  test('Passes when claimed perimeter is less than actual perimeter (allowing for tolerance)', async () => {
+    const engine = getEngine(parcel, [rules.tolerancePerimeter])
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 76,
+      tolerance: 2
+    })
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('withinTolerancePerimeter')
+  })
+  test('Fails when claimed perimeter is greater than actual perimeter (allowing for tolerance)', async () => {
+    const engine = getEngine(parcel, [rules.tolerancePerimeter])
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 78,
+      tolerance: 2
     })
 
     expect(result.events.length).toBe(0)
