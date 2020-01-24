@@ -44,4 +44,9 @@ const getEngine = (originalParcel, rules) => {
   return engine
 }
 
-module.exports = getEngine
+const runEngine = async (parcel, rules, options) => {
+  const engine = getEngine(parcel, rules)
+  return engine.run(options)
+}
+
+module.exports = runEngine
