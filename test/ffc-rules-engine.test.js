@@ -316,4 +316,48 @@ describe('Combination rules', () => {
     expect(eventNameList).toContain('noActionsInTimePeriod')
     expect(eventNameList).toContain('withinPerimeter')
   })
+  test('Fails when only time period passes', async () => {
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [],
+      previousActions: [
+        {
+          date: '2017-04-28',
+          identifier: 'FG1'
+        }
+      ]
+    }
+    const engine = getEngine(parcel, [rules.perimeter, rules.noActionsInTimePeriod])
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 500,
+      actionYearsThreshold: 2
+    })
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('noActionsInTimePeriod')
+  })
+  test('Fails when only perimeter rule passes', async () => {
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [],
+      previousActions: [
+        {
+          date: '2017-04-28',
+          identifier: 'FG1'
+        }
+      ]
+    }
+    const engine = getEngine(parcel, [rules.perimeter, rules.noActionsInTimePeriod])
+    const result = await engine.run({
+      actionId: 'FG1',
+      claimedPerimeter: 50,
+      actionYearsThreshold: 5
+    })
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('withinPerimeter')
+  })
 })
