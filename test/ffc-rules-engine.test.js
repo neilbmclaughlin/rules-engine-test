@@ -92,7 +92,7 @@ const getYearsSinceLastAction = (actionId, previousActions) => {
 }
 
 const getEngine = (parcel, rules) => {
-  const getParcelFact = async (params, almanac) => {
+  const getParcel = async (params, almanac) => {
     const actionId = await almanac.factValue('actionId')
     const perimeterFeatureTotal = getPerimeterFeaturesSum(parcel.perimeterFeatures)
     parcel.adjustedPerimeter = parcel.perimeter - perimeterFeatureTotal
@@ -109,8 +109,8 @@ const getEngine = (parcel, rules) => {
   for (const rule of rules) {
     engine.addRule(rule)
   }
-  engine.addFact('parcel', getParcelFact)
-  engine.addFact('toleranceUpperLimit', getToleranceUpperLimit)
+  engine.addFact('parcel', getParcel, { priority: 1 })
+  engine.addFact('toleranceUpperLimit', getToleranceUpperLimit, { priority: 2 })
   return engine
 }
 
