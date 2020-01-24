@@ -102,7 +102,6 @@ describe('No actions in time period rule', () => {
     const engine = getEngine(parcel, [rules.noActionsInTimePeriod])
     const result = await engine.run({
       actionId: 'FG1',
-      claimedPerimeter: 50,
       actionYearsThreshold: 2
     })
 
@@ -124,7 +123,6 @@ describe('No actions in time period rule', () => {
     const engine = getEngine(parcel, [rules.noActionsInTimePeriod])
     const result = await engine.run({
       actionId: 'FG1',
-      claimedPerimeter: 50,
       actionYearsThreshold: 2
     })
 
@@ -146,7 +144,6 @@ describe('No actions in time period rule', () => {
     const engine = getEngine(parcel, [rules.noActionsInTimePeriod])
     const result = await engine.run({
       actionId: 'FG1',
-      claimedPerimeter: 50,
       actionYearsThreshold: 5
     })
 
@@ -167,7 +164,6 @@ describe('No actions in time period rule', () => {
     const engine = getEngine(parcel, [rules.noActionsInTimePeriod])
     const result = await engine.run({
       actionId: 'FG1',
-      claimedPerimeter: 50,
       actionYearsThreshold: 5
     })
 
