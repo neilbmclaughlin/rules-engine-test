@@ -19,7 +19,7 @@ const cloneJsonObject = function (object) {
   return JSON.parse(JSON.stringify(object))
 }
 
-const getEngine = (originalParcel, rules) => {
+const getEngine = (originalParcel, rules, referenceDate) => {
   const parcel = cloneJsonObject(originalParcel)
   const getParcel = async (params, almanac) => {
     return parcel
@@ -34,7 +34,7 @@ const getEngine = (originalParcel, rules) => {
     const actionId = await almanac.factValue('actionId')
     if (parcel.previousActions.filter((pa) => pa.identifier === actionId).length > 0) {
       const dateOfLastAction = moment.max(parcel.previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))
-      return moment().diff(dateOfLastAction, 'years', true)
+      return referenceDate.diff(dateOfLastAction, 'years', true)
     }
     return null
   }
@@ -57,8 +57,8 @@ const getEngine = (originalParcel, rules) => {
   return engine
 }
 
-const runEngine = async (parcel, rules, options) => {
-  const engine = getEngine(parcel, rules)
+const runEngine = async (parcel, rules, options, referenceDate = moment()) => {
+  const engine = getEngine(parcel, rules, referenceDate)
   return engine.run(options)
 }
 

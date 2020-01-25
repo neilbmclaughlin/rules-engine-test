@@ -1,3 +1,4 @@
+const moment = require('moment')
 const { runEngine, rules } = require('../ffc-rules-engine')
 
 describe('No actions in time period rule', () => {
@@ -17,7 +18,7 @@ describe('No actions in time period rule', () => {
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('noActionsInTimePeriod')
   })
-  test('Passes when matching last action was in Apr 2017 and threshold check is 2 years', async () => {
+  test('Passes when matching last action is over 2 years ago and threshold check is 2 years', async () => {
     const parcel = {
       parcelRef: 'PR123',
       perimeter: 75,
@@ -32,20 +33,21 @@ describe('No actions in time period rule', () => {
     const result = await runEngine(
       parcel,
       [rules.noActionsInTimePeriod],
-      { actionId: 'FG1', actionYearsThreshold: 2 }
+      { actionId: 'FG1', actionYearsThreshold: 2 },
+      moment('2020-01-25')
     )
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('noActionsInTimePeriod')
   })
-  test('Fails when matching last action was in Apr 2017 and threshold check is 5 years', async () => {
+  test('Fails when matching last action is 2 years ago and threshold check is 5 years', async () => {
     const parcel = {
       parcelRef: 'PR123',
       perimeter: 75,
       perimeterFeatures: [],
       previousActions: [
         {
-          date: '2017-04-28',
+          date: '2018-01-25',
           identifier: 'FG1'
         }
       ]
@@ -53,12 +55,13 @@ describe('No actions in time period rule', () => {
     const result = await runEngine(
       parcel,
       [rules.noActionsInTimePeriod],
-      { actionId: 'FG1', actionYearsThreshold: 5 }
+      { actionId: 'FG1', actionYearsThreshold: 5 },
+      moment('2020-01-25')
     )
 
     expect(result.events.length).toBe(0)
   })
-  test('Passes when different last action was in Apr 2017 and threshold check is 5 years', async () => {
+  test('Passes when matching last action is over 2 years ago and threshold check is 5 years', async () => {
     const parcel = {
       parcelRef: 'PR123',
       perimeter: 75,
@@ -73,11 +76,33 @@ describe('No actions in time period rule', () => {
     const result = await runEngine(
       parcel,
       [rules.noActionsInTimePeriod],
-      { actionId: 'FG1', actionYearsThreshold: 5 }
+      { actionId: 'FG1', actionYearsThreshold: 5 },
+      moment('2020-01-25')
     )
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('noActionsInTimePeriod')
+  })
+  test('if no date passed to runEngine then date defaults to now', async () => {
+    const twoYearsAndADayFromNow = moment().subtract(2, 'years').add(1, 'day').format('YYYY-MM-DD')
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [],
+      previousActions: [
+        {
+          date: twoYearsAndADayFromNow,
+          identifier: 'FG1'
+        }
+      ]
+    }
+    const result = await runEngine(
+      parcel,
+      [rules.noActionsInTimePeriod],
+      { actionId: 'FG1', actionYearsThreshold: 2 }
+    )
+
+    expect(result.events.length).toBe(0)
   })
 })
 
