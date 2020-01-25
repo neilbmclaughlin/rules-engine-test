@@ -58,6 +58,9 @@ const getEngine = (originalParcel, rules, referenceDate) => {
 }
 
 const runEngine = async (parcel, rules, options, referenceDate = moment()) => {
+  if (!parcel.perimeter) {
+    throw new Error('Missing perimeter property')
+  }
   const engine = getEngine(parcel, rules, referenceDate)
   return engine.run(options)
 }

@@ -1,6 +1,14 @@
 const moment = require('moment')
 const { runEngine, rules } = require('../ffc-rules-engine')
 
+describe('RuleEngine handles bad parcel schemas', () => {
+  test('Throws and exception for bad schema', async () => {
+    const parcel = {
+      parcelRef: 'PR123'
+    }
+    return expect(runEngine(parcel, [rules.notSSSI])).rejects.toThrow('Missing perimeter property')
+  })
+})
 describe('No actions in time period rule', () => {
   test('Passes when there are no previous actions', async () => {
     const parcel = {
