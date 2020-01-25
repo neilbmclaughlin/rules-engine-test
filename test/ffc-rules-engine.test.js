@@ -22,7 +22,7 @@ describe('RuleEngine handles bad parcel schemas', () => {
     }
   })
 })
-describe('No actions in time period rule', () => {
+describe('Rule: No previous actions within time period', () => {
   test('Passes when there are no previous actions', async () => {
     const parcel = {
       parcelRef: 'PR123',
@@ -34,7 +34,8 @@ describe('No actions in time period rule', () => {
     const result = await runEngine(
       parcel,
       [rules.noActionsInTimePeriod],
-      { actionId: 'FG1', actionYearsThreshold: 2 }
+      { actionId: 'FG1', actionYearsThreshold: 2 },
+      moment('2020-01-25')
     )
 
     expect(result.events.length).toBe(1)
@@ -108,7 +109,7 @@ describe('No actions in time period rule', () => {
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('noActionsInTimePeriod')
   })
-  test('if no date passed to runEngine then date defaults to now', async () => {
+  test('If no date passed to runEngine then date defaults to now', async () => {
     const twoYearsAndADayFromNow = moment().subtract(2, 'years').add(1, 'day').format('YYYY-MM-DD')
     const parcel = {
       parcelRef: 'PR123',
@@ -132,7 +133,7 @@ describe('No actions in time period rule', () => {
   })
 })
 
-describe('Is not SSI Rule', () => {
+describe('Rule: Not SSSI', () => {
   test('Fails when parcel is SSSI', async () => {
     const parcel = {
       parcelRef: 'PR123',
@@ -160,7 +161,7 @@ describe('Is not SSI Rule', () => {
   })
 })
 
-describe('Perimeter rule', () => {
+describe('Rule: Claimed perimeter <= actual perimeter', () => {
   const parcel = {
     parcelRef: 'PR123',
     perimeter: 75,
@@ -199,7 +200,7 @@ describe('Perimeter rule', () => {
   })
 })
 
-describe('AdjustedPerimeter rule', () => {
+describe('Rule: Claimed perimeter <= perimeter adjusted to take into account perimeter features', () => {
   test('Passes when there are no perimeter features and claimed perimeter less than perimeter', async () => {
     const parcel = {
       parcelRef: 'PR123',
@@ -284,7 +285,7 @@ describe('AdjustedPerimeter rule', () => {
   })
 })
 
-describe('Perimeter tolerance rule', () => {
+describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () => {
   const parcel = {
     parcelRef: 'PR123',
     perimeter: 75,
@@ -297,6 +298,26 @@ describe('Perimeter tolerance rule', () => {
       parcel,
       [rules.tolerancePerimeter],
       { claimedPerimeter: 76, tolerance: 2 }
+    )
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('withinTolerancePerimeter')
+  })
+  test('Passes when claimed perimeter is less than actual perimeter (despite tolerance)', async () => {
+    const result = await runEngine(
+      parcel,
+      [rules.tolerancePerimeter],
+      { claimedPerimeter: 50, tolerance: 2 }
+    )
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('withinTolerancePerimeter')
+  })
+  test('Passes when claimed perimeter is equal to actual perimeter (allowing for tolerance)', async () => {
+    const result = await runEngine(
+      parcel,
+      [rules.tolerancePerimeter],
+      { claimedPerimeter: 77, tolerance: 2 }
     )
 
     expect(result.events.length).toBe(1)
