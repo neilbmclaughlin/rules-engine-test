@@ -39,6 +39,8 @@
   },
   "dependencies": {
     "json-rules-engine": "^5.0.2",
-    "moment": "^2.24.0"
+    "jsonschema": "^1.2.5",
+    "moment": "^2.24.0",
+    "verror": "^1.10.0"
   }
 }

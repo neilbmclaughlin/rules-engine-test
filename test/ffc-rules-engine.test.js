@@ -1,12 +1,25 @@
 const moment = require('moment')
+const VError = require('verror')
 const { runEngine, rules } = require('../ffc-rules-engine')
 
 describe('RuleEngine handles bad parcel schemas', () => {
-  test('Throws and exception for bad schema', async () => {
-    const parcel = {
-      parcelRef: 'PR123'
+  test('Throws an exception for missing properties', async () => {
+    const parcel = {}
+    expect.assertions(2)
+    try {
+      await runEngine(parcel, [rules.notSSSI])
+    } catch (err) {
+      expect(err.name).toBe('ParcelSchemaValidationError')
+      const exepectedMissingProperties = [
+        'parcelRef',
+        'perimeter',
+        'perimeterFeatures',
+        'previousActions',
+        'sssi'
+      ]
+      const missingProperties = VError.info(err).errors.map((e) => e.argument)
+      expect(missingProperties.sort()).toEqual(exepectedMissingProperties)
     }
-    return expect(runEngine(parcel, [rules.notSSSI])).rejects.toThrow('Missing perimeter property')
   })
 })
 describe('No actions in time period rule', () => {
@@ -15,7 +28,8 @@ describe('No actions in time period rule', () => {
       parcelRef: 'PR123',
       perimeter: 75,
       perimeterFeatures: [],
-      previousActions: []
+      previousActions: [],
+      sssi: false
     }
     const result = await runEngine(
       parcel,
@@ -36,7 +50,8 @@ describe('No actions in time period rule', () => {
           date: '2017-04-28',
           identifier: 'FG1'
         }
-      ]
+      ],
+      sssi: false
     }
     const result = await runEngine(
       parcel,
@@ -58,7 +73,8 @@ describe('No actions in time period rule', () => {
           date: '2018-01-25',
           identifier: 'FG1'
         }
-      ]
+      ],
+      sssi: false
     }
     const result = await runEngine(
       parcel,
@@ -79,7 +95,8 @@ describe('No actions in time period rule', () => {
           date: '2017-04-28',
           identifier: 'XYZ'
         }
-      ]
+      ],
+      sssi: false
     }
     const result = await runEngine(
       parcel,
@@ -102,7 +119,8 @@ describe('No actions in time period rule', () => {
           date: twoYearsAndADayFromNow,
           identifier: 'FG1'
         }
-      ]
+      ],
+      sssi: false
     }
     const result = await runEngine(
       parcel,
@@ -147,7 +165,8 @@ describe('Perimeter rule', () => {
     parcelRef: 'PR123',
     perimeter: 75,
     perimeterFeatures: [],
-    previousActions: []
+    previousActions: [],
+    sssi: false
   }
   test('Passes when claimed perimeter is less than actual perimeter', async () => {
     const result = await runEngine(
@@ -186,7 +205,8 @@ describe('AdjustedPerimeter rule', () => {
       parcelRef: 'PR123',
       perimeter: 75,
       perimeterFeatures: [],
-      previousActions: []
+      previousActions: [],
+      sssi: false
     }
     const result = await runEngine(
       parcel,
@@ -207,7 +227,8 @@ describe('AdjustedPerimeter rule', () => {
           perimeter: 15
         }
       ],
-      previousActions: []
+      previousActions: [],
+      sssi: false
     }
     const result = await runEngine(
       parcel,
@@ -228,7 +249,8 @@ describe('AdjustedPerimeter rule', () => {
           perimeter: 15
         }
       ],
-      previousActions: []
+      previousActions: [],
+      sssi: false
     }
     const result = await runEngine(
       parcel,
@@ -249,7 +271,8 @@ describe('AdjustedPerimeter rule', () => {
           perimeter: 15
         }
       ],
-      previousActions: []
+      previousActions: [],
+      sssi: false
     }
     const result = await runEngine(
       parcel,
@@ -266,7 +289,8 @@ describe('Perimeter tolerance rule', () => {
     parcelRef: 'PR123',
     perimeter: 75,
     perimeterFeatures: [],
-    previousActions: []
+    previousActions: [],
+    sssi: false
   }
   test('Passes when claimed perimeter is less than actual perimeter (allowing for tolerance)', async () => {
     const result = await runEngine(
@@ -300,7 +324,8 @@ describe('Combination rules', () => {
           date: '2017-04-28',
           identifier: 'FG1'
         }
-      ]
+      ],
+      sssi: false
     }
     const result = await runEngine(
       parcel,
@@ -327,7 +352,8 @@ describe('Combination rules', () => {
           date: '2017-04-28',
           identifier: 'FG1'
         }
-      ]
+      ],
+      sssi: false
     }
     const result = await runEngine(
       parcel,
@@ -352,7 +378,8 @@ describe('Combination rules', () => {
           date: '2017-04-28',
           identifier: 'FG1'
         }
-      ]
+      ],
+      sssi: false
     }
     const result = await runEngine(
       parcel,

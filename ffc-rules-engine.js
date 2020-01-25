@@ -1,10 +1,13 @@
 const moment = require('moment')
+var { validate } = require('jsonschema')
 const RuleEngine = require('json-rules-engine')
 const noActionsInTimePeriod = require('./rules/no-actions-in-time-period.json')
 const perimeter = require('./rules/perimeter.json')
 const tolerancePerimeter = require('./rules/tolerance-perimeter.json')
 const adjustedPerimeter = require('./rules/within-adjusted-perimeter.json')
 const notSSSI = require('./rules/not-sssi.json')
+const parcelSchema = require('./parcel-schema.json')
+const VError = require('verror')
 
 const rules = {
   noActionsInTimePeriod,
@@ -57,10 +60,22 @@ const getEngine = (originalParcel, rules, referenceDate) => {
   return engine
 }
 
-const runEngine = async (parcel, rules, options, referenceDate = moment()) => {
-  if (!parcel.perimeter) {
-    throw new Error('Missing perimeter property')
+const validateParcel = function (parcel) {
+  const validationResult = validate(parcel, parcelSchema)
+
+  if (!validationResult.valid) {
+    const options = {
+      name: 'ParcelSchemaValidationError',
+      info: {
+        errors: validationResult.errors
+      }
+    }
+    throw new VError(options, 'Parcel schema validation error')
   }
+}
+
+const runEngine = async (parcel, rules, options, referenceDate = moment()) => {
+  validateParcel(parcel)
   const engine = getEngine(parcel, rules, referenceDate)
   return engine.run(options)
 }
