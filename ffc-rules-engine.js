@@ -17,13 +17,7 @@ const rules = {
   notSSSI
 }
 
-const cloneJsonObject = function (object) {
-  // quick clone for immutability, parcels are JSON so this is OK
-  return JSON.parse(JSON.stringify(object))
-}
-
-const getEngine = (originalParcel, rules, referenceDate) => {
-  const parcel = cloneJsonObject(originalParcel)
+const getEngine = (parcel, rules, referenceDate) => {
   const getParcel = async (params, almanac) => {
     return parcel
   }
