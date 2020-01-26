@@ -1,0 +1,35 @@
+name: NPM Publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Use Node.js version 10
+      uses: actions/setup-node@v1
+      with:
+        node-version: '10'
+    - name: Npm install
+      run: npm install
+    - name: Run test
+      run: npm test
+  npm-publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10
+          registry-url: https://registry.npmjs.org/
+      - run: npm publish  --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
