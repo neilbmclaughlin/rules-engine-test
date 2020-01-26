@@ -1,20 +1,15 @@
 const moment = require('moment')
 var { validate } = require('jsonschema')
 const RuleEngine = require('json-rules-engine')
-const noActionsInTimePeriod = require('./rules/no-actions-in-time-period.json')
-const perimeter = require('./rules/perimeter.json')
-const tolerancePerimeter = require('./rules/tolerance-perimeter.json')
-const adjustedPerimeter = require('./rules/within-adjusted-perimeter.json')
-const notSSSI = require('./rules/not-sssi.json')
 const parcelSchema = require('./parcel-schema.json')
 const VError = require('verror')
 
 const rules = {
-  noActionsInTimePeriod,
-  perimeter,
-  tolerancePerimeter,
-  adjustedPerimeter,
-  notSSSI
+  noActionsInTimePeriod: require('./rules/no-actions-in-time-period.json'),
+  perimeter: require('./rules/perimeter.json'),
+  tolerancePerimeter: require('./rules/tolerance-perimeter.json'),
+  adjustedPerimeter: require('./rules/within-adjusted-perimeter.json'),
+  notSSSI: require('./rules/not-sssi.json')
 }
 
 const getEngine = (parcel, rules, referenceDate) => {
