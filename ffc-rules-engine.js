@@ -65,8 +65,7 @@ const validateParcel = function (parcel) {
 
 const runEngine = async (parcel, rules, options, referenceDate = moment()) => {
   validateParcel(parcel)
-  const engine = getEngine(parcel, rules, referenceDate)
-  return engine.run(options)
+  return getEngine(parcel, rules, referenceDate).run(options)
 }
 
 module.exports = {
