@@ -1,6 +1,6 @@
 const moment = require('moment')
 const VError = require('verror')
-const { runEngine, rules } = require('../ffc-rules-engine')
+const { allRulesPass, runEngine, rules } = require('../ffc-rules-engine')
 
 describe('RuleEngine handles bad parcel schemas', () => {
   test('Throws an exception for missing properties', async () => {
@@ -414,5 +414,83 @@ describe('Combination rules', () => {
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('withinPerimeter')
+  })
+})
+
+describe('allRulesPass', () => {
+  test('Returns true when both time period and perimeter rules pass', async () => {
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [],
+      previousActions: [
+        {
+          date: '2017-04-28',
+          identifier: 'FG1'
+        }
+      ],
+      sssi: false
+    }
+    const result = await allRulesPass(
+      parcel,
+      [rules.perimeter, rules.noActionsInTimePeriod],
+      {
+        actionId: 'FG1',
+        claimedPerimeter: 50,
+        actionYearsThreshold: 2
+      }
+    )
+
+    expect(result).toBe(true)
+  })
+  test('Return false when only time period passes', async () => {
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [],
+      previousActions: [
+        {
+          date: '2017-04-28',
+          identifier: 'FG1'
+        }
+      ],
+      sssi: false
+    }
+    const result = await allRulesPass(
+      parcel,
+      [rules.perimeter, rules.noActionsInTimePeriod],
+      {
+        actionId: 'FG1',
+        claimedPerimeter: 500,
+        actionYearsThreshold: 2
+      }
+    )
+
+    expect(result).toBe(false)
+  })
+  test('Return false when only perimeter rule passes', async () => {
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [],
+      previousActions: [
+        {
+          date: '2017-04-28',
+          identifier: 'FG1'
+        }
+      ],
+      sssi: false
+    }
+    const result = await allRulesPass(
+      parcel,
+      [rules.perimeter, rules.noActionsInTimePeriod],
+      {
+        actionId: 'FG1',
+        claimedPerimeter: 50,
+        actionYearsThreshold: 5
+      }
+    )
+
+    expect(result).toBe(false)
   })
 })

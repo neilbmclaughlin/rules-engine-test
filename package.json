@@ -10,7 +10,8 @@
     "pretest": "npm run lint",
     "lint": "standard",
     "test": "jest",
-    "test:watch": "nodemon --inspect=0.0.0.0 --legacy-watch --exec npm test"
+    "test:watch": "nodemon --inspect=0.0.0.0 --legacy-watch --exec npm test",
+    "examples": "node examples/examples.js"
   },
   "author": "Neil McLaughlin",
   "license": "MIT",

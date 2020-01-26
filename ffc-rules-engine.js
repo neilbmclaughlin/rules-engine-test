@@ -13,6 +13,7 @@ const rules = {
 }
 
 const getEngine = (parcel, rules, referenceDate) => {
+  validateParcel(parcel)
   const getParcel = async (params, almanac) => {
     return parcel
   }
@@ -64,11 +65,17 @@ const validateParcel = function (parcel) {
 }
 
 const runEngine = async (parcel, rules, options, referenceDate = moment()) => {
-  validateParcel(parcel)
   return getEngine(parcel, rules, referenceDate).run(options)
+}
+
+const allRulesPass = async (parcel, ruleset, options) => {
+  const result = await runEngine(parcel, ruleset, options)
+  return result.events.length === ruleset.length
 }
 
 module.exports = {
   runEngine,
+  getEngine,
+  allRulesPass,
   rules
 }
