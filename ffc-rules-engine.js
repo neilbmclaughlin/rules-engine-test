@@ -42,10 +42,10 @@ const getEngine = (parcel, rules, referenceDate) => {
   for (const rule of rules) {
     engine.addRule(rule)
   }
-  engine.addFact('parcel', getParcel, { priority: 1 })
-  engine.addFact('toleranceUpperLimit', getToleranceUpperLimit, { priority: 2 })
-  engine.addFact('yearsSinceLastAction', getYearsSinceLastAction, { priority: 2 })
-  engine.addFact('adjustedPerimeter', getAdjustedPerimeter, { priority: 2 })
+  engine.addFact('parcel', getParcel)
+  engine.addFact('toleranceUpperLimit', getToleranceUpperLimit)
+  engine.addFact('yearsSinceLastAction', getYearsSinceLastAction)
+  engine.addFact('adjustedPerimeter', getAdjustedPerimeter)
   return engine
 }
 
