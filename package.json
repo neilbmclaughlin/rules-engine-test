@@ -1,8 +1,8 @@
 {
-  "name": "rules-engine-test",
+  "name": "@neilbmclaughlin/rules-engine-test",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Test of json-rules-engine for demo ELM caculation service",
+  "main": "ffc-rules-engine.js",
   "directories": {
     "test": "test"
   },
@@ -10,10 +10,10 @@
     "pretest": "npm run lint",
     "lint": "standard",
     "test": "jest",
-    "test:watch": "nodemon --inspect=0.0.0.0 --ext js --legacy-watch --exec npm test"
+    "test:watch": "nodemon --inspect=0.0.0.0 --legacy-watch --exec npm test"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Neil McLaughlin",
+  "license": "MIT",
   "devDependencies": {
     "jest": "^25.1.0",
     "nodemon": "^2.0.2",
@@ -35,12 +35,21 @@
   "nodemonConfig": {
     "ignore": [
       "**/test-output/**"
-    ]
+    ],
+    "ext": "js,json"
   },
   "dependencies": {
     "json-rules-engine": "^5.0.2",
     "jsonschema": "^1.2.5",
     "moment": "^2.24.0",
     "verror": "^1.10.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neilbmclaughlin/rules-engine-test.git"
+  },
+  "bugs": {
+    "url": "https://github.com/neilbmclaughlin/rules-engine-test/issues"
+  },
+  "homepage": "https://github.com/neilbmclaughlin/rules-engine-test#readme"
 }
