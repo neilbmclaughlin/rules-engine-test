@@ -55,8 +55,7 @@ describe('Rule: No previous actions within time period', () => {
     }
     const result = await runEngine(
       [rules.noActionsInTimePeriod],
-      { parcel, actionId: 'FG1', actionYearsThreshold: 2 },
-      moment('2020-01-25')
+      { parcel, actionId: 'FG1', actionYearsThreshold: 2, referenceDate: moment('2020-01-25') }
     )
 
     expect(result.events.length).toBe(1)
@@ -77,8 +76,7 @@ describe('Rule: No previous actions within time period', () => {
     }
     const result = await runEngine(
       [rules.noActionsInTimePeriod],
-      { parcel, actionId: 'FG1', actionYearsThreshold: 5 },
-      moment('2020-01-25')
+      { parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25') }
     )
 
     expect(result.events.length).toBe(0)
@@ -98,8 +96,7 @@ describe('Rule: No previous actions within time period', () => {
     }
     const result = await runEngine(
       [rules.noActionsInTimePeriod],
-      { parcel, actionId: 'FG1', actionYearsThreshold: 5 },
-      moment('2020-01-25')
+      { parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2020-01-25') }
     )
 
     expect(result.events.length).toBe(1)
