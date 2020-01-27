@@ -15,8 +15,7 @@ const rules = {
 const facts = {
   getToleranceUpperLimit: require('./facts/get-tolerance-upper-limit'),
   getYearsSinceLastAction: require('./facts/get-years-since-last-action'),
-  getAdjustedPerimeter: require('./facts/get-adjusted-perimeter'),
-  getParcel: require('./facts/get-parcel')
+  getAdjustedPerimeter: require('./facts/get-adjusted-perimeter')
 }
 
 function validateParcel (parcel) {
@@ -33,29 +32,27 @@ function validateParcel (parcel) {
   }
 }
 
-function getEngine (parcel, rules, referenceDate) {
-  validateParcel(parcel)
-
+function getEngine (rules, referenceDate) {
   const engine = new RuleEngine.Engine()
 
   for (const rule of rules) {
     engine.addRule(rule)
   }
 
-  engine.addFact('parcel', facts.getParcel(parcel))
-  engine.addFact('toleranceUpperLimit', facts.getToleranceUpperLimit(parcel))
-  engine.addFact('yearsSinceLastAction', facts.getYearsSinceLastAction(parcel, referenceDate))
-  engine.addFact('adjustedPerimeter', facts.getAdjustedPerimeter(parcel))
+  engine.addFact('toleranceUpperLimit', facts.getToleranceUpperLimit())
+  engine.addFact('yearsSinceLastAction', facts.getYearsSinceLastAction(referenceDate))
+  engine.addFact('adjustedPerimeter', facts.getAdjustedPerimeter())
 
   return engine
 }
 
-async function runEngine (parcel, rules, options, referenceDate = moment()) {
-  return getEngine(parcel, rules, referenceDate).run(options)
+async function runEngine (rules, options, referenceDate = moment()) {
+  validateParcel(options.parcel)
+  return getEngine(rules, referenceDate).run(options)
 }
 
-async function allRulesPass (parcel, ruleset, options) {
-  const result = await runEngine(parcel, ruleset, options)
+async function allRulesPass (ruleset, options) {
+  const result = await runEngine(ruleset, options)
   return result.events.length === ruleset.length
 }
 

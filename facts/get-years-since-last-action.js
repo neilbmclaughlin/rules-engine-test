@@ -1,7 +1,8 @@
 const moment = require('moment')
 
-module.exports = (parcel, referenceDate) => {
+module.exports = (referenceDate) => {
   return async function getYearsSinceLastAction (params, almanac) {
+    const parcel = await almanac.factValue('parcel')
     const actionId = await almanac.factValue('actionId')
     if (parcel.previousActions.filter((pa) => pa.identifier === actionId).length > 0) {
       const dateOfLastAction = moment.max(parcel.previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))

@@ -7,7 +7,7 @@ describe('RuleEngine handles bad parcel schemas', () => {
     const parcel = {}
     expect.assertions(2)
     try {
-      await runEngine(parcel, [rules.notSSSI])
+      await runEngine([rules.notSSSI], { parcel })
     } catch (err) {
       expect(err.name).toBe('ParcelSchemaValidationError')
       const exepectedMissingProperties = [
@@ -32,9 +32,8 @@ describe('Rule: No previous actions within time period', () => {
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.noActionsInTimePeriod],
-      { actionId: 'FG1', actionYearsThreshold: 2 },
+      { parcel, actionId: 'FG1', actionYearsThreshold: 2 },
       moment('2020-01-25')
     )
 
@@ -55,9 +54,8 @@ describe('Rule: No previous actions within time period', () => {
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.noActionsInTimePeriod],
-      { actionId: 'FG1', actionYearsThreshold: 2 },
+      { parcel, actionId: 'FG1', actionYearsThreshold: 2 },
       moment('2020-01-25')
     )
 
@@ -78,9 +76,8 @@ describe('Rule: No previous actions within time period', () => {
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.noActionsInTimePeriod],
-      { actionId: 'FG1', actionYearsThreshold: 5 },
+      { parcel, actionId: 'FG1', actionYearsThreshold: 5 },
       moment('2020-01-25')
     )
 
@@ -100,9 +97,8 @@ describe('Rule: No previous actions within time period', () => {
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.noActionsInTimePeriod],
-      { actionId: 'FG1', actionYearsThreshold: 5 },
+      { parcel, actionId: 'FG1', actionYearsThreshold: 5 },
       moment('2020-01-25')
     )
 
@@ -124,9 +120,8 @@ describe('Rule: No previous actions within time period', () => {
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.noActionsInTimePeriod],
-      { actionId: 'FG1', actionYearsThreshold: 2 }
+      { parcel, actionId: 'FG1', actionYearsThreshold: 2 }
     )
 
     expect(result.events.length).toBe(0)
@@ -142,7 +137,7 @@ describe('Rule: Not SSSI', () => {
       previousActions: [],
       sssi: true
     }
-    const result = await runEngine(parcel, [rules.notSSSI])
+    const result = await runEngine([rules.notSSSI], { parcel })
 
     expect(result.events.length).toBe(0)
   })
@@ -154,7 +149,7 @@ describe('Rule: Not SSSI', () => {
       previousActions: [],
       sssi: false
     }
-    const result = await runEngine(parcel, [rules.notSSSI])
+    const result = await runEngine([rules.notSSSI], { parcel })
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('notSSSI')
@@ -171,9 +166,8 @@ describe('Rule: Claimed perimeter <= actual perimeter', () => {
   }
   test('Passes when claimed perimeter is less than actual perimeter', async () => {
     const result = await runEngine(
-      parcel,
       [rules.perimeter],
-      { claimedPerimeter: 50 }
+      { parcel, claimedPerimeter: 50 }
     )
 
     expect(result.events.length).toBe(1)
@@ -181,9 +175,8 @@ describe('Rule: Claimed perimeter <= actual perimeter', () => {
   })
   test('Passes when claimed perimeter equals actual perimeter', async () => {
     const result = await runEngine(
-      parcel,
       [rules.perimeter],
-      { claimedPerimeter: 75 }
+      { parcel, claimedPerimeter: 75 }
     )
 
     expect(result.events.length).toBe(1)
@@ -191,9 +184,8 @@ describe('Rule: Claimed perimeter <= actual perimeter', () => {
   })
   test('Fails when claimed perimeter is greater than actual perimeter', async () => {
     const result = await runEngine(
-      parcel,
       [rules.perimeter],
-      { claimedPerimeter: 150 }
+      { parcel, claimedPerimeter: 150 }
     )
 
     expect(result.events.length).toBe(0)
@@ -210,9 +202,8 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.adjustedPerimeter],
-      { claimedPerimeter: 40 }
+      { parcel, claimedPerimeter: 40 }
     )
 
     expect(result.events.length).toBe(1)
@@ -232,9 +223,8 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.adjustedPerimeter],
-      { claimedPerimeter: 40 }
+      { parcel, claimedPerimeter: 40 }
     )
 
     expect(result.events.length).toBe(1)
@@ -254,9 +244,8 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.adjustedPerimeter],
-      { claimedPerimeter: 60 }
+      { parcel, claimedPerimeter: 60 }
     )
 
     expect(result.events.length).toBe(1)
@@ -276,9 +265,8 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.adjustedPerimeter],
-      { claimedPerimeter: 61 }
+      { parcel, claimedPerimeter: 61 }
     )
 
     expect(result.events.length).toBe(0)
@@ -295,9 +283,8 @@ describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () 
   }
   test('Passes when claimed perimeter is less than actual perimeter (allowing for tolerance)', async () => {
     const result = await runEngine(
-      parcel,
       [rules.tolerancePerimeter],
-      { claimedPerimeter: 76, tolerance: 2 }
+      { parcel, claimedPerimeter: 76, tolerance: 2 }
     )
 
     expect(result.events.length).toBe(1)
@@ -305,9 +292,8 @@ describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () 
   })
   test('Passes when claimed perimeter is less than actual perimeter (despite tolerance)', async () => {
     const result = await runEngine(
-      parcel,
       [rules.tolerancePerimeter],
-      { claimedPerimeter: 50, tolerance: 2 }
+      { parcel, claimedPerimeter: 50, tolerance: 2 }
     )
 
     expect(result.events.length).toBe(1)
@@ -315,9 +301,8 @@ describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () 
   })
   test('Passes when claimed perimeter is equal to actual perimeter (allowing for tolerance)', async () => {
     const result = await runEngine(
-      parcel,
       [rules.tolerancePerimeter],
-      { claimedPerimeter: 77, tolerance: 2 }
+      { parcel, claimedPerimeter: 77, tolerance: 2 }
     )
 
     expect(result.events.length).toBe(1)
@@ -325,9 +310,8 @@ describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () 
   })
   test('Fails when claimed perimeter is greater than actual perimeter (allowing for tolerance)', async () => {
     const result = await runEngine(
-      parcel,
       [rules.tolerancePerimeter],
-      { claimedPerimeter: 78, tolerance: 2 }
+      { parcel, claimedPerimeter: 78, tolerance: 2 }
     )
 
     expect(result.events.length).toBe(0)
@@ -349,9 +333,9 @@ describe('Combination rules', () => {
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.perimeter, rules.noActionsInTimePeriod],
       {
+        parcel,
         actionId: 'FG1',
         claimedPerimeter: 50,
         actionYearsThreshold: 2
@@ -377,9 +361,9 @@ describe('Combination rules', () => {
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.perimeter, rules.noActionsInTimePeriod],
       {
+        parcel,
         actionId: 'FG1',
         claimedPerimeter: 500,
         actionYearsThreshold: 2
@@ -403,9 +387,9 @@ describe('Combination rules', () => {
       sssi: false
     }
     const result = await runEngine(
-      parcel,
       [rules.perimeter, rules.noActionsInTimePeriod],
       {
+        parcel,
         actionId: 'FG1',
         claimedPerimeter: 50,
         actionYearsThreshold: 5
@@ -432,9 +416,9 @@ describe('allRulesPass', () => {
       sssi: false
     }
     const result = await allRulesPass(
-      parcel,
       [rules.perimeter, rules.noActionsInTimePeriod],
       {
+        parcel,
         actionId: 'FG1',
         claimedPerimeter: 50,
         actionYearsThreshold: 2
@@ -457,9 +441,9 @@ describe('allRulesPass', () => {
       sssi: false
     }
     const result = await allRulesPass(
-      parcel,
       [rules.perimeter, rules.noActionsInTimePeriod],
       {
+        parcel,
         actionId: 'FG1',
         claimedPerimeter: 500,
         actionYearsThreshold: 2
@@ -482,9 +466,9 @@ describe('allRulesPass', () => {
       sssi: false
     }
     const result = await allRulesPass(
-      parcel,
       [rules.perimeter, rules.noActionsInTimePeriod],
       {
+        parcel,
         actionId: 'FG1',
         claimedPerimeter: 50,
         actionYearsThreshold: 5
