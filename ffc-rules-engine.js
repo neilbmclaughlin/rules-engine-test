@@ -12,6 +12,13 @@ const rules = {
   notSSSI: require('./rules/not-sssi.json')
 }
 
+const facts = {
+  getToleranceUpperLimit: require('./facts/get-tolerance-upper-limit'),
+  getYearsSinceLastAction: require('./facts/get-years-since-last-action'),
+  getAdjustedPerimeter: require('./facts/get-adjusted-perimeter'),
+  getParcel: require('./facts/get-parcel')
+}
+
 function validateParcel (parcel) {
   const validationResult = validate(parcel, parcelSchema)
 
@@ -28,39 +35,18 @@ function validateParcel (parcel) {
 
 function getEngine (parcel, rules, referenceDate) {
   validateParcel(parcel)
-  async function getParcel (params, almanac) {
-    return parcel
-  }
-
-  async function getToleranceUpperLimit (params, almanac) {
-    const tolerance = await almanac.factValue('tolerance')
-    return parcel.perimeter + tolerance
-  }
-
-  async function getYearsSinceLastAction (params, almanac) {
-    const actionId = await almanac.factValue('actionId')
-    if (parcel.previousActions.filter((pa) => pa.identifier === actionId).length > 0) {
-      const dateOfLastAction = moment.max(parcel.previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))
-      return referenceDate.diff(dateOfLastAction, 'years', true)
-    }
-    return null
-  }
-
-  async function getAdjustedPerimeter (params, almanac) {
-    const featurePerimeterLength = parcel.perimeterFeatures.length > 0
-      ? (parcel.perimeterFeatures.map((f) => f.perimeter).reduce((total, p) => total + p))
-      : 0
-    return parcel.perimeter - featurePerimeterLength
-  }
 
   const engine = new RuleEngine.Engine()
+
   for (const rule of rules) {
     engine.addRule(rule)
   }
-  engine.addFact('parcel', getParcel)
-  engine.addFact('toleranceUpperLimit', getToleranceUpperLimit)
-  engine.addFact('yearsSinceLastAction', getYearsSinceLastAction)
-  engine.addFact('adjustedPerimeter', getAdjustedPerimeter)
+
+  engine.addFact('parcel', facts.getParcel(parcel))
+  engine.addFact('toleranceUpperLimit', facts.getToleranceUpperLimit(parcel))
+  engine.addFact('yearsSinceLastAction', facts.getYearsSinceLastAction(parcel, referenceDate))
+  engine.addFact('adjustedPerimeter', facts.getAdjustedPerimeter(parcel))
+
   return engine
 }
 
