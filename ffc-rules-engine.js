@@ -1,8 +1,6 @@
 const moment = require('moment')
-var { validate } = require('jsonschema')
 const RuleEngine = require('json-rules-engine')
-const parcelSchema = require('./parcel-schema.json')
-const VError = require('verror')
+const validateParcel = require('./parcel-validation')
 
 const rules = {
   noActionsInTimePeriod: require('./rules/no-actions-in-time-period.json'),
@@ -16,20 +14,6 @@ const facts = {
   toleranceUpperLimit: require('./facts/get-tolerance-upper-limit'),
   yearsSinceLastAction: require('./facts/get-years-since-last-action'),
   adjustedPerimeter: require('./facts/get-adjusted-perimeter')
-}
-
-function validateParcel (parcel) {
-  const validationResult = validate(parcel, parcelSchema)
-
-  if (!validationResult.valid) {
-    const options = {
-      name: 'ParcelSchemaValidationError',
-      info: {
-        errors: validationResult.errors
-      }
-    }
-    throw new VError(options, 'Parcel schema validation error')
-  }
 }
 
 function getEngine (rules, referenceDate) {

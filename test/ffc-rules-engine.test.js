@@ -1,27 +1,6 @@
 const moment = require('moment')
-const VError = require('verror')
 const { allRulesPass, runEngine, rules } = require('../ffc-rules-engine')
 
-describe('RuleEngine handles bad parcel schemas', () => {
-  test('Throws an exception for missing properties', async () => {
-    const parcel = {}
-    expect.assertions(2)
-    try {
-      await runEngine([rules.notSSSI], { parcel })
-    } catch (err) {
-      expect(err.name).toBe('ParcelSchemaValidationError')
-      const exepectedMissingProperties = [
-        'parcelRef',
-        'perimeter',
-        'perimeterFeatures',
-        'previousActions',
-        'sssi'
-      ]
-      const missingProperties = VError.info(err).errors.map((e) => e.argument)
-      expect(missingProperties.sort()).toEqual(exepectedMissingProperties)
-    }
-  })
-})
 describe('Rule: No previous actions within time period', () => {
   test('Passes when there are no previous actions', async () => {
     const parcel = {
