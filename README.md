@@ -10,4 +10,4 @@
 
 ## Example usage
 
-[examples/examples.js]()
+[examples/examples.js](examples/examples.js)
