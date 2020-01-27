@@ -12,18 +12,32 @@ const rules = {
   notSSSI: require('./rules/not-sssi.json')
 }
 
-const getEngine = (parcel, rules, referenceDate) => {
+function validateParcel (parcel) {
+  const validationResult = validate(parcel, parcelSchema)
+
+  if (!validationResult.valid) {
+    const options = {
+      name: 'ParcelSchemaValidationError',
+      info: {
+        errors: validationResult.errors
+      }
+    }
+    throw new VError(options, 'Parcel schema validation error')
+  }
+}
+
+function getEngine (parcel, rules, referenceDate) {
   validateParcel(parcel)
-  const getParcel = async (params, almanac) => {
+  async function getParcel (params, almanac) {
     return parcel
   }
 
-  const getToleranceUpperLimit = async (params, almanac) => {
+  async function getToleranceUpperLimit (params, almanac) {
     const tolerance = await almanac.factValue('tolerance')
     return parcel.perimeter + tolerance
   }
 
-  const getYearsSinceLastAction = async (params, almanac) => {
+  async function getYearsSinceLastAction (params, almanac) {
     const actionId = await almanac.factValue('actionId')
     if (parcel.previousActions.filter((pa) => pa.identifier === actionId).length > 0) {
       const dateOfLastAction = moment.max(parcel.previousActions.map((pa) => moment(pa.date, 'YYYY-MM-DD')))
@@ -32,7 +46,7 @@ const getEngine = (parcel, rules, referenceDate) => {
     return null
   }
 
-  const getAdjustedPerimeter = async (params, almanac) => {
+  async function getAdjustedPerimeter (params, almanac) {
     const featurePerimeterLength = parcel.perimeterFeatures.length > 0
       ? (parcel.perimeterFeatures.map((f) => f.perimeter).reduce((total, p) => total + p))
       : 0
@@ -50,25 +64,11 @@ const getEngine = (parcel, rules, referenceDate) => {
   return engine
 }
 
-const validateParcel = function (parcel) {
-  const validationResult = validate(parcel, parcelSchema)
-
-  if (!validationResult.valid) {
-    const options = {
-      name: 'ParcelSchemaValidationError',
-      info: {
-        errors: validationResult.errors
-      }
-    }
-    throw new VError(options, 'Parcel schema validation error')
-  }
-}
-
-const runEngine = async (parcel, rules, options, referenceDate = moment()) => {
+async function runEngine (parcel, rules, options, referenceDate = moment()) {
   return getEngine(parcel, rules, referenceDate).run(options)
 }
 
-const allRulesPass = async (parcel, ruleset, options) => {
+async function allRulesPass (parcel, ruleset, options) {
   const result = await runEngine(parcel, ruleset, options)
   return result.events.length === ruleset.length
 }
