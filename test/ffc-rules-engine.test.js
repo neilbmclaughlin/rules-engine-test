@@ -1,5 +1,5 @@
 const moment = require('moment')
-const { allRulesPass, runEngine, rules } = require('../ffc-rules-engine')
+const { allRulesPass, runEngine, getEngine, rules } = require('../ffc-rules-engine')
 
 describe('Rule: No previous actions within time period', () => {
   test('Passes when there are no previous actions', async () => {
@@ -166,6 +166,18 @@ describe('Rule: Claimed perimeter <= actual perimeter', () => {
 
     expect(result.events.length).toBe(0)
   })
+  test('Returns the claimed perimeter as result', async () => {
+    // Note: this test is demonstrating how to return a calculated maximum value for a perimeter
+    // It is not testing any of our code
+    expect.assertions(2)
+    await getEngine([rules.perimeter])
+      .on('success', (event, almanac, ruleResult) => {
+        const returnedFactsResults = ruleResult.conditions.all.map((c) => c.factResult)
+        expect(returnedFactsResults.length).toBe(1)
+        expect(returnedFactsResults[0]).toBe(75)
+      })
+      .run({ parcel, claimedPerimeter: 0 })
+  })
 })
 
 describe('Rule: Claimed perimeter <= perimeter adjusted to take into account perimeter features', () => {
@@ -246,6 +258,30 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
     )
 
     expect(result.events.length).toBe(0)
+  })
+  test('Returns adjusted perimeter in result', async () => {
+    // Note: this test is demonstrating how to return a calculated maximum value for a perimeter
+    // It is not testing any of our code
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [
+        {
+          type: 'lake',
+          perimeter: 15
+        }
+      ],
+      previousActions: [],
+      sssi: false
+    }
+    expect.assertions(2)
+    await getEngine([rules.adjustedPerimeter])
+      .on('success', (event, almanac, ruleResult) => {
+        const returnedFactsResults = ruleResult.conditions.all.map((c) => c.factResult)
+        expect(returnedFactsResults.length).toBe(1)
+        expect(returnedFactsResults[0]).toBe(60)
+      })
+      .run({ parcel, claimedPerimeter: 0 })
   })
 })
 
