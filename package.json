@@ -1,6 +1,6 @@
 {
   "name": "@neilbmclaughlin/rules-engine-test",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "Test of json-rules-engine for demo ELM caculation service",
   "main": "ffc-rules-engine.js",
   "directories": {
