@@ -198,6 +198,7 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
     expect(result.events[0].type).toBe('withinAdjustedPerimeter')
   })
   test('cultivatedParcel passes when parcel is arable land', async () => {
+    const arableLandCode = 110
     const parcel = {
       parcelRef: 'PR123',
       perimeter: 75,
@@ -207,7 +208,7 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
           perimeter: 15
         }
       ],
-      landCoverClass: 110,
+      landCoverClass: arableLandCode,
       previousActions: [],
       sssi: false
     }
@@ -220,6 +221,7 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
     expect(result.events[0].type).toBe('cultivated')
   })
   test('cultivatedParcel passes when parcel is cultivated & managed', async () => {
+    const cultivatedAndManagedCode = 670
     const parcel = {
       parcelRef: 'PR123',
       perimeter: 75,
@@ -229,7 +231,7 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
           perimeter: 15
         }
       ],
-      landCoverClass: 670,
+      landCoverClass: cultivatedAndManagedCode,
       previousActions: [],
       sssi: false
     }
