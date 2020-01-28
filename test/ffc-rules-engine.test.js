@@ -197,6 +197,71 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('withinAdjustedPerimeter')
   })
+  test('cultivatedParcel passes when parcel is arable land', async () => {
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [
+        {
+          type: 'lake',
+          perimeter: 15
+        }
+      ],
+      landCoverClass: 110,
+      previousActions: [],
+      sssi: false
+    }
+    const result = await runEngine(
+      [rules.cultivatedParcel],
+      { parcel }
+    )
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('cultivated')
+  })
+  test('cultivatedParcel passes when parcel is cultivated & managed', async () => {
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [
+        {
+          type: 'lake',
+          perimeter: 15
+        }
+      ],
+      landCoverClass: 670,
+      previousActions: [],
+      sssi: false
+    }
+    const result = await runEngine(
+      [rules.cultivatedParcel],
+      { parcel }
+    )
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('cultivated')
+  })
+  test('cultivatedParcel fails when parcel is not cultivated', async () => {
+    const parcel = {
+      parcelRef: 'PR123',
+      perimeter: 75,
+      perimeterFeatures: [
+        {
+          type: 'lake',
+          perimeter: 15
+        }
+      ],
+      landCoverClass: 100,
+      previousActions: [],
+      sssi: false
+    }
+    const result = await runEngine(
+      [rules.cultivatedParcel],
+      { parcel }
+    )
+
+    expect(result.events.length).toBe(0)
+  })
   test('Passes when claimed perimeter is less than adjusted perimeter', async () => {
     const parcel = {
       parcelRef: 'PR123',

@@ -7,7 +7,8 @@ const rules = {
   perimeter: require('./rules/perimeter.json'),
   tolerancePerimeter: require('./rules/tolerance-perimeter.json'),
   adjustedPerimeter: require('./rules/within-adjusted-perimeter.json'),
-  notSSSI: require('./rules/not-sssi.json')
+  notSSSI: require('./rules/not-sssi.json'),
+  cultivatedParcel: require('./rules/cultivated-parcel.json')
 }
 
 const facts = {
