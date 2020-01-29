@@ -180,55 +180,6 @@ describe('Rule: Claimed perimeter <= actual perimeter', () => {
   })
 })
 
-describe('Rule: Claimed area <= actual area', () => {
-  const parcel = {
-    ref: 'PR123',
-    totalPerimeter: 75,
-    totalArea: 75,
-    perimeterFeatures: [],
-    areaFeatures: [],
-    previousActions: [],
-    sssi: false
-  }
-  test('Passes when claimed area is less than actual area', async () => {
-    const result = await runEngine(
-      [rules.area],
-      { parcel, quantity: 50 }
-    )
-
-    expect(result.events.length).toBe(1)
-    expect(result.events[0].type).toBe('withinArea')
-  })
-  test('Passes when claimed area equals actual area', async () => {
-    const result = await runEngine(
-      [rules.area],
-      { parcel, quantity: 75 }
-    )
-
-    expect(result.events.length).toBe(1)
-    expect(result.events[0].type).toBe('withinArea')
-  })
-  test('Fails when claimed area is greater than actual area', async () => {
-    const result = await runEngine(
-      [rules.area],
-      { parcel, quantity: 150 }
-    )
-
-    expect(result.events.length).toBe(0)
-  })
-  test('Returns the claimed area as result', async () => {
-    // Note: this test is demonstrating how to return a calculated maximum value for a area
-    // It is not testing any of our code
-    expect.assertions(2)
-    await getEngine([rules.area])
-      .on('success', (event, almanac, ruleResult) => {
-        const returnedFactsResults = ruleResult.conditions.all.map((c) => c.factResult)
-        expect(returnedFactsResults.length).toBe(1)
-        expect(returnedFactsResults[0]).toBe(75)
-      })
-      .run({ parcel, quantity: 0 })
-  })
-})
 describe('Rule: Claimed perimeter <= perimeter adjusted to take into account perimeter features', () => {
   test('Passes when there are no perimeter features and claimed perimeter less than perimeter', async () => {
     const parcel = {
@@ -245,73 +196,6 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
 
     expect(result.events.length).toBe(1)
     expect(result.events[0].type).toBe('withinAdjustedPerimeter')
-  })
-  test('cultivatedParcel passes when parcel is arable land', async () => {
-    const arableLandCode = 110
-    const parcel = {
-      ref: 'PR123',
-      totalPerimeter: 75,
-      perimeterFeatures: [
-        {
-          type: 'lake',
-          length: 15
-        }
-      ],
-      landCoverClass: arableLandCode,
-      previousActions: [],
-      sssi: false
-    }
-    const result = await runEngine(
-      [rules.cultivatedParcel],
-      { parcel }
-    )
-
-    expect(result.events.length).toBe(1)
-    expect(result.events[0].type).toBe('cultivated')
-  })
-  test('cultivatedParcel passes when parcel is cultivated & managed', async () => {
-    const cultivatedAndManagedCode = 670
-    const parcel = {
-      ref: 'PR123',
-      totalPerimeter: 75,
-      perimeterFeatures: [
-        {
-          type: 'lake',
-          length: 15
-        }
-      ],
-      landCoverClass: cultivatedAndManagedCode,
-      previousActions: [],
-      sssi: false
-    }
-    const result = await runEngine(
-      [rules.cultivatedParcel],
-      { parcel }
-    )
-
-    expect(result.events.length).toBe(1)
-    expect(result.events[0].type).toBe('cultivated')
-  })
-  test('cultivatedParcel fails when parcel is not cultivated', async () => {
-    const parcel = {
-      ref: 'PR123',
-      totalPerimeter: 75,
-      perimeterFeatures: [
-        {
-          type: 'lake',
-          length: 15
-        }
-      ],
-      landCoverClass: 100,
-      previousActions: [],
-      sssi: false
-    }
-    const result = await runEngine(
-      [rules.cultivatedParcel],
-      { parcel }
-    )
-
-    expect(result.events.length).toBe(0)
   })
   test('Passes when claimed perimeter is less than adjusted perimeter', async () => {
     const parcel = {
@@ -443,6 +327,241 @@ describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () 
     )
 
     expect(result.events.length).toBe(0)
+  })
+})
+
+describe('Rule: Cultivated land', () => {
+  test('cultivatedParcel passes when parcel is arable land', async () => {
+    const arableLandCode = 110
+    const parcel = {
+      ref: 'PR123',
+      totalPerimeter: 75,
+      perimeterFeatures: [
+        {
+          type: 'lake',
+          length: 15
+        }
+      ],
+      landCoverClass: arableLandCode,
+      previousActions: [],
+      sssi: false
+    }
+    const result = await runEngine(
+      [rules.cultivatedParcel],
+      { parcel }
+    )
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('cultivated')
+  })
+  test('cultivatedParcel passes when parcel is cultivated & managed', async () => {
+    const cultivatedAndManagedCode = 670
+    const parcel = {
+      ref: 'PR123',
+      totalPerimeter: 75,
+      perimeterFeatures: [
+        {
+          type: 'lake',
+          length: 15
+        }
+      ],
+      landCoverClass: cultivatedAndManagedCode,
+      previousActions: [],
+      sssi: false
+    }
+    const result = await runEngine(
+      [rules.cultivatedParcel],
+      { parcel }
+    )
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('cultivated')
+  })
+  test('cultivatedParcel fails when parcel is not cultivated', async () => {
+    const parcel = {
+      ref: 'PR123',
+      totalPerimeter: 75,
+      perimeterFeatures: [
+        {
+          type: 'lake',
+          length: 15
+        }
+      ],
+      landCoverClass: 100,
+      previousActions: [],
+      sssi: false
+    }
+    const result = await runEngine(
+      [rules.cultivatedParcel],
+      { parcel }
+    )
+
+    expect(result.events.length).toBe(0)
+  })
+})
+
+describe('Rule: Claimed area <= actual area', () => {
+  const parcel = {
+    ref: 'PR123',
+    totalPerimeter: 75,
+    totalArea: 75,
+    perimeterFeatures: [],
+    areaFeatures: [],
+    previousActions: [],
+    sssi: false
+  }
+  test('Passes when claimed area is less than actual area', async () => {
+    const result = await runEngine(
+      [rules.area],
+      { parcel, quantity: 50 }
+    )
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('withinArea')
+  })
+  test('Passes when claimed area equals actual area', async () => {
+    const result = await runEngine(
+      [rules.area],
+      { parcel, quantity: 75 }
+    )
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('withinArea')
+  })
+  test('Fails when claimed area is greater than actual area', async () => {
+    const result = await runEngine(
+      [rules.area],
+      { parcel, quantity: 150 }
+    )
+
+    expect(result.events.length).toBe(0)
+  })
+  test('Returns the claimed area as result', async () => {
+    // Note: this test is demonstrating how to return a calculated maximum value for a area
+    // It is not testing any of our code
+    expect.assertions(2)
+    await getEngine([rules.area])
+      .on('success', (event, almanac, ruleResult) => {
+        const returnedFactsResults = ruleResult.conditions.all.map((c) => c.factResult)
+        expect(returnedFactsResults.length).toBe(1)
+        expect(returnedFactsResults[0]).toBe(75)
+      })
+      .run({ parcel, quantity: 0 })
+  })
+})
+
+describe('Rule: Claimed area <= area adjusted to take into account area features', () => {
+  test('Passes when there are no area features and claimed area less than area', async () => {
+    const parcel = {
+      ref: 'PR123',
+      totalPerimeter: 75,
+      totalArea: 75,
+      perimeterFeatures: [],
+      areaFeatures: [],
+      previousActions: [],
+      sssi: false
+    }
+    const result = await runEngine(
+      [rules.pondlessArea],
+      { parcel, quantity: 40 }
+    )
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('withinPondlessArea')
+  })
+  test('Passes when claimed area is less than adjusted area', async () => {
+    const parcel = {
+      ref: 'PR123',
+      totalPerimeter: 75,
+      totalArea: 75,
+      perimeterFeatures: [],
+      areaFeatures: [
+        {
+          type: 'pond',
+          areaCovered: 3
+        }
+      ],
+      previousActions: [],
+      sssi: false
+    }
+    const result = await runEngine(
+      [rules.pondlessArea],
+      { parcel, quantity: 40 }
+    )
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('withinPondlessArea')
+  })
+  test('Passes when claimed area is equal to adjusted area', async () => {
+    const parcel = {
+      ref: 'PR123',
+      totalPerimeter: 75,
+      totalArea: 75,
+      perimeterFeatures: [],
+      areaFeatures: [
+        {
+          type: 'pond',
+          areaCovered: 3
+        }
+      ],
+      previousActions: [],
+      sssi: false
+    }
+    const result = await runEngine(
+      [rules.pondlessArea],
+      { parcel, quantity: 72 }
+    )
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('withinPondlessArea')
+  })
+  test('Fails when claimed area is greater than adjusted area', async () => {
+    const parcel = {
+      ref: 'PR123',
+      totalPerimeter: 75,
+      totalArea: 75,
+      perimeterFeatures: [],
+      areaFeatures: [
+        {
+          type: 'pond',
+          areaCovered: 3
+        }
+      ],
+      previousActions: [],
+      sssi: false
+    }
+    const result = await runEngine(
+      [rules.pondlessArea],
+      { parcel, quantity: 74 }
+    )
+
+    expect(result.events.length).toBe(0)
+  })
+  test('Returns adjusted area in result', async () => {
+    // Note: this test is demonstrating how to return a calculated maximum value for a area
+    // It is not testing any of our code
+    const parcel = {
+      ref: 'PR123',
+      totalPerimeter: 75,
+      totalArea: 75,
+      perimeterFeatures: [],
+      areaFeatures: [
+        {
+          type: 'pond',
+          areaCovered: 3
+        }
+      ],
+      previousActions: [],
+      sssi: false
+    }
+    expect.assertions(2)
+    await getEngine([rules.pondlessArea])
+      .on('success', (event, almanac, ruleResult) => {
+        const returnedFactsResults = ruleResult.conditions.all.map((c) => c.factResult)
+        expect(returnedFactsResults.length).toBe(1)
+        expect(returnedFactsResults[0]).toBe(72)
+      })
+      .run({ parcel, quantity: 0 })
   })
 })
 
