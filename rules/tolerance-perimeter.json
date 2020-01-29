@@ -8,7 +8,7 @@
         "fact": "toleranceUpperLimit",
         "operator": "greaterThanInclusive",
         "value": {
-          "fact": "claimedPerimeter"
+          "fact": "quantity"
         }
       }
     ]

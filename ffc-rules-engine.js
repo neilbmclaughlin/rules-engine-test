@@ -1,21 +1,8 @@
+const facts = require('./facts')
 const moment = require('moment')
 const RuleEngine = require('json-rules-engine')
+const rules = require('./rules')
 const validateParcel = require('./parcel-validation')
-
-const rules = {
-  noActionsInTimePeriod: require('./rules/no-actions-in-time-period.json'),
-  perimeter: require('./rules/perimeter.json'),
-  tolerancePerimeter: require('./rules/tolerance-perimeter.json'),
-  adjustedPerimeter: require('./rules/within-adjusted-perimeter.json'),
-  notSSSI: require('./rules/not-sssi.json'),
-  cultivatedParcel: require('./rules/cultivated-parcel.json')
-}
-
-const facts = {
-  toleranceUpperLimit: require('./facts/get-tolerance-upper-limit'),
-  yearsSinceLastAction: require('./facts/get-years-since-last-action'),
-  adjustedPerimeter: require('./facts/get-adjusted-perimeter')
-}
 
 function getEngine (rules, referenceDate) {
   const engine = new RuleEngine.Engine()

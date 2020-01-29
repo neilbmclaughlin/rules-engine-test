@@ -1,12 +1,11 @@
 {
   "event": {
-    "type": "withinPerimeter"
+    "type": "withinPondlessArea"
   },
   "conditions": {
     "all": [
       {
-        "fact": "parcel",
-        "path": "$.totalPerimeter",
+        "fact": "pondlessArea",
         "operator": "greaterThanInclusive",
         "value": {
           "fact": "quantity"

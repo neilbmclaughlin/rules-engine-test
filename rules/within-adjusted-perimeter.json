@@ -8,7 +8,7 @@
         "fact": "adjustedPerimeter",
         "operator": "greaterThanInclusive",
         "value": {
-          "fact": "claimedPerimeter"
+          "fact": "quantity"
         }
       }
     ]

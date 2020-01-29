@@ -143,7 +143,7 @@ describe('Rule: Claimed perimeter <= actual perimeter', () => {
   test('Passes when claimed perimeter is less than actual perimeter', async () => {
     const result = await runEngine(
       [rules.perimeter],
-      { parcel, claimedPerimeter: 50 }
+      { parcel, quantity: 50 }
     )
 
     expect(result.events.length).toBe(1)
@@ -152,7 +152,7 @@ describe('Rule: Claimed perimeter <= actual perimeter', () => {
   test('Passes when claimed perimeter equals actual perimeter', async () => {
     const result = await runEngine(
       [rules.perimeter],
-      { parcel, claimedPerimeter: 75 }
+      { parcel, quantity: 75 }
     )
 
     expect(result.events.length).toBe(1)
@@ -161,7 +161,7 @@ describe('Rule: Claimed perimeter <= actual perimeter', () => {
   test('Fails when claimed perimeter is greater than actual perimeter', async () => {
     const result = await runEngine(
       [rules.perimeter],
-      { parcel, claimedPerimeter: 150 }
+      { parcel, quantity: 150 }
     )
 
     expect(result.events.length).toBe(0)
@@ -176,7 +176,7 @@ describe('Rule: Claimed perimeter <= actual perimeter', () => {
         expect(returnedFactsResults.length).toBe(1)
         expect(returnedFactsResults[0]).toBe(75)
       })
-      .run({ parcel, claimedPerimeter: 0 })
+      .run({ parcel, quantity: 0 })
   })
 })
 
@@ -191,7 +191,7 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
     }
     const result = await runEngine(
       [rules.adjustedPerimeter],
-      { parcel, claimedPerimeter: 40 }
+      { parcel, quantity: 40 }
     )
 
     expect(result.events.length).toBe(1)
@@ -279,7 +279,7 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
     }
     const result = await runEngine(
       [rules.adjustedPerimeter],
-      { parcel, claimedPerimeter: 40 }
+      { parcel, quantity: 40 }
     )
 
     expect(result.events.length).toBe(1)
@@ -300,7 +300,7 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
     }
     const result = await runEngine(
       [rules.adjustedPerimeter],
-      { parcel, claimedPerimeter: 60 }
+      { parcel, quantity: 60 }
     )
 
     expect(result.events.length).toBe(1)
@@ -321,7 +321,7 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
     }
     const result = await runEngine(
       [rules.adjustedPerimeter],
-      { parcel, claimedPerimeter: 61 }
+      { parcel, quantity: 61 }
     )
 
     expect(result.events.length).toBe(0)
@@ -348,7 +348,7 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
         expect(returnedFactsResults.length).toBe(1)
         expect(returnedFactsResults[0]).toBe(60)
       })
-      .run({ parcel, claimedPerimeter: 0 })
+      .run({ parcel, quantity: 0 })
   })
 })
 
@@ -363,7 +363,7 @@ describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () 
   test('Passes when claimed perimeter is less than actual perimeter (allowing for tolerance)', async () => {
     const result = await runEngine(
       [rules.tolerancePerimeter],
-      { parcel, claimedPerimeter: 76, tolerance: 2 }
+      { parcel, quantity: 76, tolerance: 2 }
     )
 
     expect(result.events.length).toBe(1)
@@ -372,7 +372,7 @@ describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () 
   test('Passes when claimed perimeter is less than actual perimeter (despite tolerance)', async () => {
     const result = await runEngine(
       [rules.tolerancePerimeter],
-      { parcel, claimedPerimeter: 50, tolerance: 2 }
+      { parcel, quantity: 50, tolerance: 2 }
     )
 
     expect(result.events.length).toBe(1)
@@ -381,7 +381,7 @@ describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () 
   test('Passes when claimed perimeter is equal to actual perimeter (allowing for tolerance)', async () => {
     const result = await runEngine(
       [rules.tolerancePerimeter],
-      { parcel, claimedPerimeter: 77, tolerance: 2 }
+      { parcel, quantity: 77, tolerance: 2 }
     )
 
     expect(result.events.length).toBe(1)
@@ -390,7 +390,7 @@ describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () 
   test('Fails when claimed perimeter is greater than actual perimeter (allowing for tolerance)', async () => {
     const result = await runEngine(
       [rules.tolerancePerimeter],
-      { parcel, claimedPerimeter: 78, tolerance: 2 }
+      { parcel, quantity: 78, tolerance: 2 }
     )
 
     expect(result.events.length).toBe(0)
@@ -416,7 +416,7 @@ describe('Combination rules', () => {
       {
         parcel,
         actionId: 'FG1',
-        claimedPerimeter: 50,
+        quantity: 50,
         actionYearsThreshold: 2
       }
     )
@@ -444,7 +444,7 @@ describe('Combination rules', () => {
       {
         parcel,
         actionId: 'FG1',
-        claimedPerimeter: 500,
+        quantity: 500,
         actionYearsThreshold: 2
       }
     )
@@ -470,7 +470,7 @@ describe('Combination rules', () => {
       {
         parcel,
         actionId: 'FG1',
-        claimedPerimeter: 50,
+        quantity: 50,
         actionYearsThreshold: 5
       }
     )
@@ -499,7 +499,7 @@ describe('allRulesPass', () => {
       {
         parcel,
         actionId: 'FG1',
-        claimedPerimeter: 50,
+        quantity: 50,
         actionYearsThreshold: 2
       }
     )
@@ -524,7 +524,7 @@ describe('allRulesPass', () => {
       {
         parcel,
         actionId: 'FG1',
-        claimedPerimeter: 500,
+        quantity: 500,
         actionYearsThreshold: 2
       }
     )
@@ -549,7 +549,7 @@ describe('allRulesPass', () => {
       {
         parcel,
         actionId: 'FG1',
-        claimedPerimeter: 50,
+        quantity: 50,
         actionYearsThreshold: 5
       }
     )
