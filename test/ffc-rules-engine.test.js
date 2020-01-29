@@ -4,8 +4,8 @@ const { allRulesPass, runEngine, getEngine, rules } = require('../ffc-rules-engi
 describe('Rule: No previous actions within time period', () => {
   test('Passes when there are no previous actions', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [],
       sssi: false
@@ -21,8 +21,8 @@ describe('Rule: No previous actions within time period', () => {
   })
   test('Passes when matching last action is over 2 years ago and threshold check is 2 years', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [
         {
@@ -42,8 +42,8 @@ describe('Rule: No previous actions within time period', () => {
   })
   test('Fails when matching last action is 2 years ago and threshold check is 5 years', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [
         {
@@ -62,8 +62,8 @@ describe('Rule: No previous actions within time period', () => {
   })
   test('Passes when matching last action is over 2 years ago and threshold check is 5 years', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [
         {
@@ -84,8 +84,8 @@ describe('Rule: No previous actions within time period', () => {
   test('If no date passed to runEngine then date defaults to now', async () => {
     const twoYearsAndADayFromNow = moment().subtract(2, 'years').add(1, 'day').format('YYYY-MM-DD')
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [
         {
@@ -107,8 +107,8 @@ describe('Rule: No previous actions within time period', () => {
 describe('Rule: Not SSSI', () => {
   test('Fails when parcel is SSSI', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [],
       sssi: true
@@ -119,8 +119,8 @@ describe('Rule: Not SSSI', () => {
   })
   test('Passes when parcel is not SSSI', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [],
       sssi: false
@@ -134,8 +134,8 @@ describe('Rule: Not SSSI', () => {
 
 describe('Rule: Claimed perimeter <= actual perimeter', () => {
   const parcel = {
-    parcelRef: 'PR123',
-    perimeter: 75,
+    ref: 'PR123',
+    totalPerimeter: 75,
     perimeterFeatures: [],
     previousActions: [],
     sssi: false
@@ -183,8 +183,8 @@ describe('Rule: Claimed perimeter <= actual perimeter', () => {
 describe('Rule: Claimed perimeter <= perimeter adjusted to take into account perimeter features', () => {
   test('Passes when there are no perimeter features and claimed perimeter less than perimeter', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [],
       sssi: false
@@ -200,12 +200,12 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
   test('cultivatedParcel passes when parcel is arable land', async () => {
     const arableLandCode = 110
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [
         {
           type: 'lake',
-          perimeter: 15
+          length: 15
         }
       ],
       landCoverClass: arableLandCode,
@@ -223,12 +223,12 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
   test('cultivatedParcel passes when parcel is cultivated & managed', async () => {
     const cultivatedAndManagedCode = 670
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [
         {
           type: 'lake',
-          perimeter: 15
+          length: 15
         }
       ],
       landCoverClass: cultivatedAndManagedCode,
@@ -245,12 +245,12 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
   })
   test('cultivatedParcel fails when parcel is not cultivated', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [
         {
           type: 'lake',
-          perimeter: 15
+          length: 15
         }
       ],
       landCoverClass: 100,
@@ -266,12 +266,12 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
   })
   test('Passes when claimed perimeter is less than adjusted perimeter', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [
         {
           type: 'lake',
-          perimeter: 15
+          length: 15
         }
       ],
       previousActions: [],
@@ -287,12 +287,12 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
   })
   test('Passes when claimed perimeter is equal to adjusted perimeter', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [
         {
           type: 'lake',
-          perimeter: 15
+          length: 15
         }
       ],
       previousActions: [],
@@ -308,12 +308,12 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
   })
   test('Fails when claimed perimeter is greater than adjusted perimeter', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [
         {
           type: 'lake',
-          perimeter: 15
+          length: 15
         }
       ],
       previousActions: [],
@@ -330,12 +330,12 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
     // Note: this test is demonstrating how to return a calculated maximum value for a perimeter
     // It is not testing any of our code
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [
         {
           type: 'lake',
-          perimeter: 15
+          length: 15
         }
       ],
       previousActions: [],
@@ -354,8 +354,8 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
 
 describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () => {
   const parcel = {
-    parcelRef: 'PR123',
-    perimeter: 75,
+    ref: 'PR123',
+    totalPerimeter: 75,
     perimeterFeatures: [],
     previousActions: [],
     sssi: false
@@ -400,8 +400,8 @@ describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () 
 describe('Combination rules', () => {
   test('Passes when both time period and perimeter rules pass', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [
         {
@@ -428,8 +428,8 @@ describe('Combination rules', () => {
   })
   test('Fails when only time period passes', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [
         {
@@ -454,8 +454,8 @@ describe('Combination rules', () => {
   })
   test('Fails when only perimeter rule passes', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [
         {
@@ -483,8 +483,8 @@ describe('Combination rules', () => {
 describe('allRulesPass', () => {
   test('Returns true when both time period and perimeter rules pass', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [
         {
@@ -508,8 +508,8 @@ describe('allRulesPass', () => {
   })
   test('Return false when only time period passes', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [
         {
@@ -533,8 +533,8 @@ describe('allRulesPass', () => {
   })
   test('Return false when only perimeter rule passes', async () => {
     const parcel = {
-      parcelRef: 'PR123',
-      perimeter: 75,
+      ref: 'PR123',
+      totalPerimeter: 75,
       perimeterFeatures: [],
       previousActions: [
         {

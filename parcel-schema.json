@@ -2,8 +2,9 @@
   "id": "/Parcel",
   "type": "object",
   "properties": {
-    "parcelRef": {"type": "string"},
-    "perimeter": {"type": "number"},
+    "ref": {"type": "string"},
+    "totalPerimeter": {"type": "number"},
+    "totalArea": {"type": "number"},
     "previousActions": {
       "type": "array",
       "items": {
@@ -13,7 +14,7 @@
           "identifier": {"type": "string"}
         },
         "required": [ "date", "identifier" ]
-      } 
+      }
     },
     "perimeterFeatures": {
       "type": "array",
@@ -21,15 +22,26 @@
         "type": "object",
         "properties": {
           "type": {"type": "string"},
-          "perimeter": {"type": "number"}
+          "length": {"type": "number"}
         },
-        "required": [ "type", "perimeter" ]
-      } 
-    } 
+        "required": [ "type", "length" ]
+      }
+    },
+    "areaFeatures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {"type": "string"},
+          "areaCovered": {"type": "number"}
+        },
+        "required": [ "type", "areaCovered" ]
+      }
+    }
   },
   "required": [
-    "parcelRef",
-    "perimeter",
+    "ref",
+    "totalPerimeter",
     "previousActions",
     "perimeterFeatures",
     "sssi"

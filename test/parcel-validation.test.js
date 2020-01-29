@@ -10,14 +10,40 @@ describe('RuleEngine handles bad parcel schemas', () => {
     } catch (err) {
       expect(err.name).toBe('ParcelSchemaValidationError')
       const exepectedMissingProperties = [
-        'parcelRef',
-        'perimeter',
+        'ref',
+        'totalPerimeter',
         'perimeterFeatures',
         'previousActions',
         'sssi'
       ]
       const missingProperties = VError.info(err).errors.map((e) => e.argument)
-      expect(missingProperties.sort()).toEqual(exepectedMissingProperties)
+      expect(missingProperties.sort()).toEqual(exepectedMissingProperties.sort())
     }
+  })
+  test('Should not throw for valid parcel', async () => {
+    const parcel = {
+      ref: 'SD74445738',
+      totalPerimeter: 325.2,
+      totalArea: 0.656,
+      perimeterFeatures: [
+        {
+          type: 'barn',
+          length: 23.3
+        },
+        {
+          type: 'hedgerow',
+          length: 162.6
+        }
+      ],
+      areaFeatures: [
+        {
+          type: 'pond',
+          areaCovered: 0.3
+        }
+      ],
+      previousActions: [],
+      sssi: false
+    }
+    expect(() => parcelValidation(parcel)).not.toThrow()
   })
 })
