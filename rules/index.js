@@ -1,10 +1,10 @@
 module.exports = {
-  adjustedPerimeter: require('./rules/within-adjusted-perimeter.json'),
-  area: require('./rules/area.json'),
-  cultivatedParcel: require('./rules/cultivated-parcel.json'),
-  noActionsInTimePeriod: require('./rules/no-actions-in-time-period.json'),
-  notSSSI: require('./rules/not-sssi.json'),
-  perimeter: require('./rules/perimeter.json'),
-  pondlessArea: require('./rules/pondless-area.json'),
-  tolerancePerimeter: require('./rules/tolerance-perimeter.json')
+  adjustedPerimeter: require('./within-adjusted-perimeter.json'),
+  area: require('./area.json'),
+  cultivatedParcel: require('./cultivated-parcel.json'),
+  noActionsInTimePeriod: require('./no-actions-in-time-period.json'),
+  notSSSI: require('./not-sssi.json'),
+  perimeter: require('./perimeter.json'),
+  pondlessArea: require('./pondless-area.json'),
+  tolerancePerimeter: require('./tolerance-perimeter.json')
 }
