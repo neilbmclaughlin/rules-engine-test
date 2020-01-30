@@ -4,7 +4,7 @@ const RuleEngine = require('json-rules-engine')
 const rules = require('./rules')
 const validateParcel = require('./parcel-validation')
 
-function getEngine (rules, referenceDate) {
+function getEngine (rules) {
   const engine = new RuleEngine.Engine()
 
   for (const rule of rules) {
@@ -18,10 +18,25 @@ function getEngine (rules, referenceDate) {
   return engine
 }
 
-async function runEngine (rules, options, referenceDate = moment()) {
+async function getFactsFromAlmanac (factNames, almanac) {
+  // [ fact1, ... ] => [ {fact1: value1}, ... ]
+  const facts = await Promise.all(factNames.map(
+    async factName => ({ [factName]: await almanac.factValue(factName) })
+  ))
+
+  // [ {fact1: value1}, ... ] => { fact1: value1, ... }
+  return Object.assign({}, ...facts)
+}
+
+async function runEngine (rules, options, referenceDate = moment(), outputFacts = []) {
   validateParcel(options.parcel)
 
-  return getEngine(rules).run({ ...options, referenceDate })
+  return getEngine(rules)
+    .run({ ...options, referenceDate })
+    .then(async ({ events, almanac }) => ({
+      events,
+      facts: await getFactsFromAlmanac(outputFacts, almanac)
+    }))
 }
 
 async function allRulesPass (ruleset, options) {
