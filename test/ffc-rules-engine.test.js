@@ -4,8 +4,8 @@ const { allRulesPass, runEngine, getEngine, rules } = require('../ffc-rules-engi
 function getParcelWithDefaults (options) {
   return {
     ref: 'PR123',
-    totalPerimeter: 75,
-    totalArea: 75,
+    totalPerimeter: 0,
+    totalArea: 0,
     perimeterFeatures: [],
     areaFeatures: [],
     previousActions: [],
@@ -190,22 +190,6 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
 
     expect(result.events.length).toBe(0)
   })
-  test('Returns adjusted perimeter in result', async () => {
-    // Note: this test is demonstrating how to return a calculated maximum value for a perimeter
-    // It is not testing any of our code
-    const parcel = getParcelWithDefaults({
-      totalPerimeter: 75,
-      perimeterFeatures: [{ type: 'lake', length: 15 }]
-    })
-    expect.assertions(2)
-    await getEngine([rules.adjustedPerimeter])
-      .on('success', (event, almanac, ruleResult) => {
-        const returnedFactsResults = ruleResult.conditions.all.map((c) => c.factResult)
-        expect(returnedFactsResults.length).toBe(1)
-        expect(returnedFactsResults[0]).toBe(60)
-      })
-      .run({ parcel, quantity: 0 })
-  })
 })
 
 describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () => {
@@ -326,7 +310,7 @@ describe('Rule: Claimed area <= actual area', () => {
 
 describe('Rule: Claimed area <= area adjusted to take into account area features', () => {
   test('Passes when there are no area features and claimed area less than area', async () => {
-    const parcel = getParcelWithDefaults({ parcelTotal: 75 })
+    const parcel = getParcelWithDefaults({ totalArea: 75 })
     const result = await runEngine(
       [rules.pondlessArea],
       { parcel, quantity: 40 }
@@ -337,6 +321,7 @@ describe('Rule: Claimed area <= area adjusted to take into account area features
   })
   test('Passes when claimed area is less than adjusted area', async () => {
     const parcel = getParcelWithDefaults({
+      totalArea: 75,
       areaFeatures: [
         {
           type: 'pond',
@@ -354,7 +339,7 @@ describe('Rule: Claimed area <= area adjusted to take into account area features
   })
   test('Passes when claimed area is equal to adjusted area', async () => {
     const parcel = getParcelWithDefaults({
-      areaTotal: 75,
+      totalArea: 75,
       areaFeatures: [
         {
           type: 'pond',
@@ -372,7 +357,7 @@ describe('Rule: Claimed area <= area adjusted to take into account area features
   })
   test('Fails when claimed area is greater than adjusted area', async () => {
     const parcel = getParcelWithDefaults({
-      areaTotal: 75,
+      totalArea: 75,
       areaFeatures: [
         {
           type: 'pond',
@@ -386,26 +371,6 @@ describe('Rule: Claimed area <= area adjusted to take into account area features
     )
 
     expect(result.events.length).toBe(0)
-  })
-  test('Returns adjusted area in result', async () => {
-    // Note: this test is demonstrating how to return a calculated maximum value for a area
-    // It is not testing any of our code
-    const parcel = getParcelWithDefaults({
-      areaFeatures: [
-        {
-          type: 'pond',
-          areaCovered: 3
-        }
-      ]
-    })
-    expect.assertions(2)
-    await getEngine([rules.pondlessArea])
-      .on('success', (event, almanac, ruleResult) => {
-        const returnedFactsResults = ruleResult.conditions.all.map((c) => c.factResult)
-        expect(returnedFactsResults.length).toBe(1)
-        expect(returnedFactsResults[0]).toBe(72)
-      })
-      .run({ parcel, quantity: 0 })
   })
 })
 
