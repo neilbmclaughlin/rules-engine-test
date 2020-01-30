@@ -1,23 +1,10 @@
+const facts = require('./facts')
 const moment = require('moment')
 const RuleEngine = require('json-rules-engine')
+const rules = require('./rules')
 const validateParcel = require('./parcel-validation')
 
-const rules = {
-  noActionsInTimePeriod: require('./rules/no-actions-in-time-period.json'),
-  perimeter: require('./rules/perimeter.json'),
-  tolerancePerimeter: require('./rules/tolerance-perimeter.json'),
-  adjustedPerimeter: require('./rules/within-adjusted-perimeter.json'),
-  notSSSI: require('./rules/not-sssi.json'),
-  cultivatedParcel: require('./rules/cultivated-parcel.json')
-}
-
-const facts = {
-  toleranceUpperLimit: require('./facts/get-tolerance-upper-limit'),
-  yearsSinceLastAction: require('./facts/get-years-since-last-action'),
-  adjustedPerimeter: require('./facts/get-adjusted-perimeter')
-}
-
-function getEngine (rules, referenceDate) {
+function getEngine (rules) {
   const engine = new RuleEngine.Engine()
 
   for (const rule of rules) {
@@ -31,10 +18,28 @@ function getEngine (rules, referenceDate) {
   return engine
 }
 
-async function runEngine (rules, options, referenceDate = moment()) {
+async function getFactsFromAlmanac (factNames, almanac) {
+  // [ fact, ... ] => [ {fact: value}, ... ]
+  const facts = await Promise.all(factNames.map(
+    async factName => ({ [factName]: await almanac.factValue(factName) })
+  ))
+
+  // [ {fact: value}, ... ] => { fact: value, ... }
+  return Object.assign({}, ...facts)
+}
+
+async function runEngine (rules, options, outputFacts = []) {
   validateParcel(options.parcel)
 
-  return getEngine(rules).run({ ...options, referenceDate })
+  if (!options.referenceDate) {
+    options.referenceDate = moment()
+  }
+
+  return getEngine(rules).run(options).then(
+    async ({ events, almanac }) => {
+      const facts = await getFactsFromAlmanac(outputFacts, almanac)
+      return { events, facts }
+    })
 }
 
 async function allRulesPass (ruleset, options) {
