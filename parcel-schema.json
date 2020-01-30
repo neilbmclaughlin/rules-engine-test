@@ -42,8 +42,10 @@
   "required": [
     "ref",
     "totalPerimeter",
+    "totalArea",
     "previousActions",
     "perimeterFeatures",
+    "areaFeatures",
     "sssi"
   ]
 }

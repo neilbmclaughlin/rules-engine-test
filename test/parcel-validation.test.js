@@ -13,6 +13,8 @@ describe('RuleEngine handles bad parcel schemas', () => {
         'ref',
         'totalPerimeter',
         'perimeterFeatures',
+        'totalArea',
+        'areaFeatures',
         'previousActions',
         'sssi'
       ]
