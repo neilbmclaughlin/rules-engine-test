@@ -209,7 +209,7 @@ describe('Rule: Claimed perimeter <= perimeter adjusted to take into account per
 })
 
 describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () => {
-  const parcel = getParcelWithDefaults({})
+  const parcel = getParcelWithDefaults({ totalPerimeter: 75 })
   test('Passes when claimed perimeter is less than actual perimeter (allowing for tolerance)', async () => {
     const result = await runEngine(
       [rules.tolerancePerimeter],
@@ -271,8 +271,8 @@ describe('Rule: Cultivated land', () => {
     expect(result.events[0].type).toBe('cultivated')
   })
   test('cultivatedParcel fails when parcel is not cultivated', async () => {
-    const randomNonCulivatedClass = 100
-    const parcel = getParcelWithDefaults({ landCoverClass: randomNonCulivatedClass })
+    const randomNonCultivatedClass = 100
+    const parcel = getParcelWithDefaults({ landCoverClass: randomNonCultivatedClass })
     const result = await runEngine(
       [rules.cultivatedParcel],
       { parcel }
@@ -283,7 +283,7 @@ describe('Rule: Cultivated land', () => {
 })
 
 describe('Rule: Claimed area <= actual area', () => {
-  const parcel = getParcelWithDefaults({})
+  const parcel = getParcelWithDefaults({ totalArea: 75 })
   test('Passes when claimed area is less than actual area', async () => {
     const result = await runEngine(
       [rules.area],
@@ -326,7 +326,7 @@ describe('Rule: Claimed area <= actual area', () => {
 
 describe('Rule: Claimed area <= area adjusted to take into account area features', () => {
   test('Passes when there are no area features and claimed area less than area', async () => {
-    const parcel = getParcelWithDefaults({})
+    const parcel = getParcelWithDefaults({ parcelTotal: 75 })
     const result = await runEngine(
       [rules.pondlessArea],
       { parcel, quantity: 40 }
@@ -354,6 +354,7 @@ describe('Rule: Claimed area <= area adjusted to take into account area features
   })
   test('Passes when claimed area is equal to adjusted area', async () => {
     const parcel = getParcelWithDefaults({
+      areaTotal: 75,
       areaFeatures: [
         {
           type: 'pond',
@@ -371,6 +372,7 @@ describe('Rule: Claimed area <= area adjusted to take into account area features
   })
   test('Fails when claimed area is greater than adjusted area', async () => {
     const parcel = getParcelWithDefaults({
+      areaTotal: 75,
       areaFeatures: [
         {
           type: 'pond',
