@@ -19,8 +19,7 @@ describe('Rule: No previous actions within time period', () => {
     const parcel = getParcelWithDefaults({ previousActions: [] })
     const result = await runEngine(
       [rules.noActionsInTimePeriod],
-      { parcel, actionId: 'FG1', actionYearsThreshold: 2 },
-      moment('2020-01-25')
+      { parcel, actionId: 'FG1', actionYearsThreshold: 2, referenceDate: moment('2020-01-25') }
     )
 
     expect(result.events.length).toBe(1)
@@ -531,8 +530,7 @@ describe('Requested facts are appended to the response object', () => {
 
     const result = await runEngine(
       [rules.adjustedPerimeter],
-      { parcel, actionId: 'FG1', actionYearsThreshold: 2, quantity: 50 },
-      moment('2020-01-25'),
+      { parcel, actionId: 'FG1', actionYearsThreshold: 2, quantity: 50, referenceDate: moment('2020-01-25') },
       ['adjustedPerimeter']
     )
 
@@ -554,8 +552,7 @@ describe('Requested facts are appended to the response object', () => {
 
     const result = await runEngine(
       [rules.pondlessArea],
-      { parcel, actionId: 'SW6', actionYearsThreshold: 2, quantity: 2 },
-      moment('2020-01-25'),
+      { parcel, actionId: 'SW6', actionYearsThreshold: 2, quantity: 2, referenceDate: moment('2020-01-25') },
       ['pondlessArea']
     )
 
@@ -572,8 +569,7 @@ describe('Requested facts are appended to the response object', () => {
 
     const result = await runEngine(
       [rules.tolerancePerimeter],
-      { actionId: 'FG1', parcel, tolerance, quantity: 50 },
-      moment('2020-01-25'),
+      { actionId: 'FG1', parcel, tolerance, quantity: 50, referenceDate: moment('2020-01-25') },
       ['toleranceUpperLimit']
     )
 
@@ -596,8 +592,7 @@ describe('Requested facts are appended to the response object', () => {
 
     const result = await runEngine(
       [rules.noActionsInTimePeriod],
-      { parcel, actionId: 'FG1', actionYearsThreshold: 5 },
-      referenceDate,
+      { parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate },
       ['yearsSinceLastAction']
     )
 
@@ -626,8 +621,7 @@ describe('Requested facts are appended to the response object', () => {
 
     const result = await runEngine(
       [rules.adjustedPerimeter],
-      { parcel, actionId: 'FG1', quantity: 150 },
-      referenceDate,
+      { parcel, actionId: 'FG1', quantity: 150, referenceDate },
       ['adjustedPerimeter', 'yearsSinceLastAction']
     )
 

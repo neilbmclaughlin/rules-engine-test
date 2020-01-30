@@ -19,24 +19,27 @@ function getEngine (rules) {
 }
 
 async function getFactsFromAlmanac (factNames, almanac) {
-  // [ fact1, ... ] => [ {fact1: value1}, ... ]
+  // [ fact, ... ] => [ {fact: value}, ... ]
   const facts = await Promise.all(factNames.map(
     async factName => ({ [factName]: await almanac.factValue(factName) })
   ))
 
-  // [ {fact1: value1}, ... ] => { fact1: value1, ... }
+  // [ {fact: value}, ... ] => { fact: value, ... }
   return Object.assign({}, ...facts)
 }
 
-async function runEngine (rules, options, referenceDate = moment(), outputFacts = []) {
+async function runEngine (rules, options, outputFacts = []) {
   validateParcel(options.parcel)
 
-  return getEngine(rules)
-    .run({ ...options, referenceDate })
-    .then(async ({ events, almanac }) => ({
-      events,
-      facts: await getFactsFromAlmanac(outputFacts, almanac)
-    }))
+  if (!options.referenceDate) {
+    options.referenceDate = moment()
+  }
+
+  return getEngine(rules).run(options).then(
+    async ({ events, almanac }) => {
+      const facts = await getFactsFromAlmanac(outputFacts, almanac)
+      return { events, facts }
+    })
 }
 
 async function allRulesPass (ruleset, options) {
