@@ -8,7 +8,7 @@ const parcel = {
   areaFeatures: [],
   previousActions: [],
   sssi: true,
-  landCoverClass: 100
+  landCoverClass: 0
 }
 
 allRulesPass([rules.perimeter, rules.notSSSI], { parcel, quantity: 50 })

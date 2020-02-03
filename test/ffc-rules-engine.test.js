@@ -10,7 +10,7 @@ function getParcelWithDefaults (options) {
     areaFeatures: [],
     previousActions: [],
     sssi: false,
-    landCoverClass: 100,
+    landCoverClass: 0,
     ...options
   }
 }
@@ -255,7 +255,7 @@ describe('Rule: Cultivated land', () => {
     expect(result.events[0].type).toBe('cultivated')
   })
   test('cultivatedParcel fails when parcel is not cultivated', async () => {
-    const randomNonCultivatedClass = 100
+    const randomNonCultivatedClass = 0
     const parcel = getParcelWithDefaults({ landCoverClass: randomNonCultivatedClass })
     const result = await runEngine(
       [rules.cultivatedParcel],

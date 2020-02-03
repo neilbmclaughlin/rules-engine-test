@@ -46,7 +46,7 @@ describe('RuleEngine handles bad parcel schemas', () => {
       ],
       previousActions: [],
       sssi: false,
-      landCoverClass: 100
+      landCoverClass: 0
     }
     expect(() => parcelValidation(parcel)).not.toThrow()
   })
