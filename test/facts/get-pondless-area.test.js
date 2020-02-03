@@ -14,7 +14,13 @@ describe('get-pondless-area fact', () => {
   test('should return total area if there are features which are not ponds', async () => {
     const fakeAlamanc = {
       factValue: () => {
-        return { totalArea: 50, areaFeatures: [{ type: 'not a pond', areaCovered: 20 }] }
+        return {
+          totalArea: 50,
+          areaFeatures: [
+            { type: 'not a pond', areaCovered: 20 },
+            { type: 'not a pond either', areaCovered: 20 }
+          ]
+        }
       }
     }
     const result = await getPondlessAreaFact({}, fakeAlamanc)
@@ -24,10 +30,17 @@ describe('get-pondless-area fact', () => {
   test('should return adjusted area if there are features which are ponds', async () => {
     const fakeAlamanc = {
       factValue: () => {
-        return { totalArea: 50, areaFeatures: [{ type: 'pond', areaCovered: 20 }] }
+        return {
+          totalArea: 150,
+          areaFeatures: [
+            { type: 'not a pond', areaCovered: 20 },
+            { type: 'pond', areaCovered: 20 },
+            { type: 'pond', areaCovered: 20 }
+          ]
+        }
       }
     }
     const result = await getPondlessAreaFact({}, fakeAlamanc)
-    expect(result).toBe(30)
+    expect(result).toBe(110)
   })
 })

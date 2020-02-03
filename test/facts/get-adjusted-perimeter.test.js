@@ -11,10 +11,10 @@ describe('get-adjusted-perimeter fact', () => {
   test('should return adjusted perimeter when there are perimeter features', async () => {
     const fakeAlamanc = {
       factValue: () => {
-        return { totalPerimeter: 50, perimeterFeatures: [{ length: 20 }] }
+        return { totalPerimeter: 150, perimeterFeatures: [{ length: 20 }, { length: 40 }] }
       }
     }
     const result = await getAdjustedPerimeterFact({}, fakeAlamanc)
-    expect(result).toBe(30)
+    expect(result).toBe(90)
   })
 })

@@ -2,7 +2,7 @@ const moment = require('moment')
 const getYearsSinceLastActionFact = require('../../facts/get-years-since-last-action')
 
 describe('years since last action fact', () => {
-  test('should return years when there is a matching previous actions for FG1', async () => {
+  test('should return years when there is a matching previous action for FG1', async () => {
     const fakeAlamanc = {
       factValue: (factName) => {
         const returnValues = {
