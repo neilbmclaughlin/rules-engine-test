@@ -10,6 +10,7 @@ function getParcelWithDefaults (options) {
     areaFeatures: [],
     previousActions: [],
     sssi: false,
+    landCoverClass: 100,
     ...options
   }
 }
