@@ -1,4 +1,6 @@
+.ash_history
 .config
+.node_repl_history
 .npm
 .standard-v14-cache
 node_modules
