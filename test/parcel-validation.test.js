@@ -11,6 +11,7 @@ describe('RuleEngine handles bad parcel schemas', () => {
       expect(err.name).toBe('ParcelSchemaValidationError')
       const exepectedMissingProperties = [
         'areaFeatures',
+        'hasReintroducedGrazing',
         'inWaterPollutionZone',
         'landCoverClass',
         'perimeterFeatures',
@@ -32,6 +33,7 @@ describe('RuleEngine handles bad parcel schemas', () => {
           areaCovered: 0.3
         }
       ],
+      hasReintroducedGrazing: false,
       inWaterPollutionZone: false,
       landCoverClass: 0,
       perimeterFeatures: [
