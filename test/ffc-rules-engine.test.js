@@ -85,6 +85,42 @@ describe('Rule: No previous actions within time period', () => {
   })
 })
 
+describe('Rule: Quantity is integer', () => {
+  const parcel = getParcelWithDefaults()
+  const enabledRules = [rules.quantityIsInteger]
+
+  test('returns true if quantity is an integer', async () => {
+    const quantities = [-95, -1, 0, 1, 384]
+
+    for (const quantity of quantities) {
+      const result = await runEngine(enabledRules, { parcel, quantity })
+      expect(result.events.length).toBe(1)
+      expect(result.events[0].type).toBe('quantityIsInteger')
+    }
+  })
+
+  test('returns false if quantity is a floating point number', async () => {
+    const quantities = [-95.9, -1.1, 0.111, 384.87]
+
+    for (const quantity of quantities) {
+      const result = await runEngine(enabledRules, { parcel, quantity })
+      expect(result.events.length).toBe(0)
+    }
+  })
+
+  test('returns false if quantity is a string', async () => {
+    const quantities = [
+      'a string value with spaces',
+      'another-string'
+    ]
+
+    for (const quantity of quantities) {
+      const result = await runEngine(enabledRules, { parcel, quantity })
+      expect(result.events.length).toBe(0)
+    }
+  })
+})
+
 describe('Rule: Not SSSI', () => {
   test('Fails when parcel is SSSI', async () => {
     const parcel = getParcelWithDefaults({ sssi: true })

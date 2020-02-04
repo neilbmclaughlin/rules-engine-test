@@ -1,11 +1,16 @@
 const facts = require('./facts')
 const moment = require('moment')
+const operators = require('./operators')
 const RuleEngine = require('json-rules-engine')
 const rules = require('./rules')
 const validateParcel = require('./parcel-validation')
 
 function getEngine (rules) {
   const engine = new RuleEngine.Engine()
+
+  for (const operatorName in operators) {
+    engine.addOperator(operatorName, operators[operatorName])
+  }
 
   for (const rule of rules) {
     engine.addRule(rule)

@@ -1,0 +1,14 @@
+{
+  "event": {
+    "type": "quantityIsInteger"
+  },
+  "conditions": {
+    "all": [
+      {
+        "fact": "quantity",
+        "operator": "isInteger",
+        "value": null
+      }
+    ]
+  }
+}

@@ -8,5 +8,6 @@ module.exports = {
   notSSSI: require('./not-sssi.json'),
   perimeter: require('./perimeter.json'),
   pondlessArea: require('./pondless-area.json'),
+  quantityIsInteger: require('./quantity-is-integer.json'),
   tolerancePerimeter: require('./tolerance-perimeter.json')
 }
