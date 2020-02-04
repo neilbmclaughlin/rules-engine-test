@@ -11,6 +11,7 @@ function getParcelWithDefaults (options) {
     previousActions: [],
     sssi: false,
     landCoverClass: 0,
+    inWaterPollutionZone: false,
     ...options
   }
 }
@@ -632,5 +633,22 @@ describe('Requested facts are appended to the response object', () => {
       adjustedPerimeter: parcel.totalPerimeter - parcel.perimeterFeatures[0].length,
       yearsSinceLastAction: referenceDate.diff(moment(parcel.previousActions[0].date), 'years', true)
     })
+  })
+})
+
+describe('Rule: Water pollution reduction zone', () => {
+  test('Passes when parcel is in a water pollution reduction zone', async () => {
+    const parcel = getParcelWithDefaults({ inWaterPollutionZone: true })
+    const result = await runEngine([rules.inWaterPollutionZone], { parcel })
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('inWaterPollutionZone')
+  })
+
+  test('Fails when parcel is not in a water pollution reduction zone', async () => {
+    const parcel = getParcelWithDefaults({ inWaterPollutionZone: false })
+    const result = await runEngine([rules.inWaterPollutionZone], { parcel })
+
+    expect(result.events.length).toBe(0)
   })
 })
