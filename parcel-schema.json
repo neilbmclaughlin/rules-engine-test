@@ -2,9 +2,30 @@
   "id": "/Parcel",
   "type": "object",
   "properties": {
-    "ref": {"type": "string"},
-    "totalPerimeter": {"type": "number"},
-    "totalArea": {"type": "number"},
+    "areaFeatures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "areaCovered": {"type": "number"},
+          "type": {"type": "string"}
+        },
+        "required": [ "type", "areaCovered" ]
+      }
+    },
+    "inWaterPollutionZone": {"type": "boolean"},
+    "landCoverClass": {"type": "integer"},
+    "perimeterFeatures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "length": {"type": "number"},
+          "type": {"type": "string"}
+        },
+        "required": [ "type", "length" ]
+      }
+    },
     "previousActions": {
       "type": "array",
       "items": {
@@ -16,40 +37,19 @@
         "required": [ "date", "identifier" ]
       }
     },
-    "perimeterFeatures": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "type": {"type": "string"},
-          "length": {"type": "number"}
-        },
-        "required": [ "type", "length" ]
-      }
-    },
-    "areaFeatures": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "type": {"type": "string"},
-          "areaCovered": {"type": "number"}
-        },
-        "required": [ "type", "areaCovered" ]
-      }
-    },
-    "landCoverClass": {"type": "integer"},
-    "inWaterPollutionZone": {"type": "boolean"}
+    "ref": {"type": "string"},
+    "totalArea": {"type": "number"},
+    "totalPerimeter": {"type": "number"}
   },
   "required": [
-    "ref",
-    "totalPerimeter",
-    "totalArea",
-    "previousActions",
-    "perimeterFeatures",
     "areaFeatures",
-    "sssi",
+    "inWaterPollutionZone",
     "landCoverClass",
-    "inWaterPollutionZone"
+    "perimeterFeatures",
+    "previousActions",
+    "ref",
+    "sssi",
+    "totalArea",
+    "totalPerimeter"
   ]
 }
