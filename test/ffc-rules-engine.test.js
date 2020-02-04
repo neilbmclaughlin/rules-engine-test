@@ -4,6 +4,7 @@ const { allRulesPass, runEngine, getEngine, rules } = require('../ffc-rules-engi
 function getParcelWithDefaults (options) {
   return {
     areaFeatures: [],
+    hasReintroducedGrazing: false,
     inWaterPollutionZone: false,
     landCoverClass: 0,
     perimeterFeatures: [],
@@ -370,6 +371,22 @@ describe('Rule: Claimed area <= area adjusted to take into account area features
       [rules.pondlessArea],
       { parcel, quantity: 74 }
     )
+
+    expect(result.events.length).toBe(0)
+  })
+})
+
+describe('Rule: Has reintroduced grazing', () => {
+  test('Passes when parcel has reintroduced grazing', async () => {
+    const parcel = getParcelWithDefaults({ hasReintroducedGrazing: true })
+    const result = await runEngine([rules.hasReintroducedGrazing], { parcel })
+
+    expect(result.events.length).toBe(1)
+    expect(result.events[0].type).toBe('hasReintroducedGrazing')
+  })
+  test('Fails when parcel has not reintroduced grazing', async () => {
+    const parcel = getParcelWithDefaults({ hasReintroducedGrazing: false })
+    const result = await runEngine([rules.hasReintroducedGrazing], { parcel })
 
     expect(result.events.length).toBe(0)
   })

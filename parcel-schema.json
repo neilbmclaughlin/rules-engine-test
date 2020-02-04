@@ -13,6 +13,7 @@
         "required": [ "type", "areaCovered" ]
       }
     },
+    "hasReintroducedGrazing": {"type": "boolean"},
     "inWaterPollutionZone": {"type": "boolean"},
     "landCoverClass": {"type": "integer"},
     "perimeterFeatures": {
@@ -44,6 +45,7 @@
   },
   "required": [
     "areaFeatures",
+    "hasReintroducedGrazing",
     "inWaterPollutionZone",
     "landCoverClass",
     "perimeterFeatures",

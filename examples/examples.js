@@ -2,6 +2,7 @@ const { allRulesPass, runEngine, getEngine, rules } = require('../ffc-rules-engi
 
 const parcel = {
   areaFeatures: [],
+  hasReintroducedGrazing: false,
   inWaterPollutionZone: false,
   landCoverClass: 0,
   perimeterFeatures: [],
