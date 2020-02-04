@@ -3,15 +3,15 @@ const { allRulesPass, runEngine, getEngine, rules } = require('../ffc-rules-engi
 
 function getParcelWithDefaults (options) {
   return {
-    ref: 'PR123',
-    totalPerimeter: 0,
-    totalArea: 0,
-    perimeterFeatures: [],
     areaFeatures: [],
-    previousActions: [],
-    sssi: false,
-    landCoverClass: 0,
     inWaterPollutionZone: false,
+    landCoverClass: 0,
+    perimeterFeatures: [],
+    previousActions: [],
+    ref: 'PR123',
+    sssi: false,
+    totalArea: 0,
+    totalPerimeter: 0,
     ...options
   }
 }

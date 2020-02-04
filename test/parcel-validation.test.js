@@ -10,15 +10,15 @@ describe('RuleEngine handles bad parcel schemas', () => {
     } catch (err) {
       expect(err.name).toBe('ParcelSchemaValidationError')
       const exepectedMissingProperties = [
-        'ref',
-        'totalPerimeter',
-        'perimeterFeatures',
-        'totalArea',
         'areaFeatures',
-        'previousActions',
-        'sssi',
+        'inWaterPollutionZone',
         'landCoverClass',
-        'inWaterPollutionZone'
+        'perimeterFeatures',
+        'previousActions',
+        'ref',
+        'sssi',
+        'totalArea',
+        'totalPerimeter'
       ]
       const missingProperties = VError.info(err).errors.map((e) => e.argument)
       expect(missingProperties.sort()).toEqual(exepectedMissingProperties.sort())
@@ -26,9 +26,14 @@ describe('RuleEngine handles bad parcel schemas', () => {
   })
   test('Should not throw for valid parcel', async () => {
     const parcel = {
-      ref: 'SD74445738',
-      totalPerimeter: 325.2,
-      totalArea: 0.656,
+      areaFeatures: [
+        {
+          type: 'pond',
+          areaCovered: 0.3
+        }
+      ],
+      inWaterPollutionZone: false,
+      landCoverClass: 0,
       perimeterFeatures: [
         {
           type: 'barn',
@@ -39,16 +44,11 @@ describe('RuleEngine handles bad parcel schemas', () => {
           length: 162.6
         }
       ],
-      areaFeatures: [
-        {
-          type: 'pond',
-          areaCovered: 0.3
-        }
-      ],
       previousActions: [],
+      ref: 'SD74445738',
       sssi: false,
-      landCoverClass: 0,
-      inWaterPollutionZone: false
+      totalArea: 0.656,
+      totalPerimeter: 325.2
     }
     expect(() => parcelValidation(parcel)).not.toThrow()
   })

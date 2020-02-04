@@ -1,15 +1,15 @@
 const { allRulesPass, runEngine, getEngine, rules } = require('../ffc-rules-engine')
 
 const parcel = {
-  ref: 'PR123',
-  totalPerimeter: 75,
-  totalArea: 7500,
-  perimeterFeatures: [],
   areaFeatures: [],
-  previousActions: [],
-  sssi: true,
+  inWaterPollutionZone: false,
   landCoverClass: 0,
-  inWaterPollutionZone: false
+  perimeterFeatures: [],
+  previousActions: [],
+  ref: 'PR123',
+  sssi: true,
+  totalArea: 7500,
+  totalPerimeter: 75
 }
 
 allRulesPass([rules.perimeter, rules.notSSSI], { parcel, quantity: 50 })
