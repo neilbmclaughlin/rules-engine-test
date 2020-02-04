@@ -38,7 +38,8 @@
         "required": [ "type", "areaCovered" ]
       }
     },
-    "landCoverClass": {"type": "integer"}
+    "landCoverClass": {"type": "integer"},
+    "inWaterPollutionZone": {"type": "boolean"}
   },
   "required": [
     "ref",
@@ -48,6 +49,7 @@
     "perimeterFeatures",
     "areaFeatures",
     "sssi",
-    "landCoverClass"
+    "landCoverClass",
+    "inWaterPollutionZone"
   ]
 }

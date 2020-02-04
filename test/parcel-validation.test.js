@@ -17,7 +17,8 @@ describe('RuleEngine handles bad parcel schemas', () => {
         'areaFeatures',
         'previousActions',
         'sssi',
-        'landCoverClass'
+        'landCoverClass',
+        'inWaterPollutionZone'
       ]
       const missingProperties = VError.info(err).errors.map((e) => e.argument)
       expect(missingProperties.sort()).toEqual(exepectedMissingProperties.sort())
@@ -46,7 +47,8 @@ describe('RuleEngine handles bad parcel schemas', () => {
       ],
       previousActions: [],
       sssi: false,
-      landCoverClass: 0
+      landCoverClass: 0,
+      inWaterPollutionZone: false
     }
     expect(() => parcelValidation(parcel)).not.toThrow()
   })
