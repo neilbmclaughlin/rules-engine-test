@@ -38,6 +38,7 @@
       }
     },
     "ref": {"type": "string"},
+    "sssi": {"type": "boolean"},
     "totalArea": {"type": "number"},
     "totalPerimeter": {"type": "number"}
   },
