@@ -1,4 +1,6 @@
 const moment = require('moment')
+const stringReplaceAsync = require('string-replace-async')
+
 const { allRulesPass, runEngine, getEngine, rules } = require('../ffc-rules-engine')
 
 function getParcelWithDefaults (options) {
@@ -686,59 +688,32 @@ describe('Get failed rules with reasons', () => {
       sssi: true
     })
     // expect.assertions(2)
-    async function getDetailsFromConditions (operator, conditions, almanac) {
-      const details = await Promise.all(conditions[operator].map(
-        async c => {
-          const returnValue = {
-            operator: c.operator,
-            fact: `${c.fact}${c.path ? c.path.substring(1) : ''}`,
-            factResult: c.factResult,
-            value: c.value && c.value.fact ? { fact: c.value.fact, value: (await almanac.factValue(c.value.fact)) } : { value: c.value },
-            result: c.result
-          }
-
-          returnValue.message =
-            `${returnValue.fact} is ${returnValue.factResult}. ` +
-            `It should be ${returnValue.operator} to ` +
-            (returnValue.value.fact ? `${returnValue.value.fact} (${returnValue.value.value})` : `${returnValue.value.value}`)
-
-          return returnValue
-        }
-      ))
-
-      return { operator, details }
-    }
     const failedRules = []
     await getEngine([rules.noActionsInTimePeriod, rules.notSSSI, rules.adjustedPerimeter])
       .on('failure', async (event, almanac, ruleResult) => {
-        const util = require('util')
-        // console.log(util.inspect({ event, almanac, ruleResult }, { depth: 8 }))
-        console.log(util.inspect({ ruleResult }, { depth: 8 }))
-        const returnedFactsResults = await getDetailsFromConditions(ruleResult.conditions.operator, ruleResult.conditions, almanac)
+        // const util = require('util')
+        // console.log(util.inspect({ ruleResult }, { depth: 8 }))
+        const hint = ruleResult.event.params.hint
+
         failedRules.push({
           ruleName: ruleResult.event.type,
           ruleParams: ruleResult.event.params,
-          returnedFactsResults
+          expandedHint: hint ? await stringReplaceAsync(hint, /\${(.*?)}/g, async (a, b) => almanac.factValue(b)) : ''
         })
       })
       .run({ parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25'), quantity: 155 })
 
     expect(failedRules.length).toBe(3)
     expect(failedRules[0].ruleName).toBe('notSSSI')
-    expect(failedRules[0].ruleParams.description).toBe('Parcel should not be in SSSI')
-    expect(failedRules[0].returnedFactsResults.operator).toBe('all')
-    expect(failedRules[0].returnedFactsResults.details.length).toBe(1)
-    expect(failedRules[0].returnedFactsResults.details[0].message).toBe('parcel.sssi is true. It should be equal to false')
+    expect(failedRules[0].ruleParams.description).toBe('Parcel should not be in an SSSI')
+    expect(failedRules[0].ruleParams.hint).toBe(undefined)
 
     expect(failedRules[1].ruleName).toBe('withinAdjustedPerimeter')
-    expect(failedRules[1].returnedFactsResults.operator).toBe('all')
-    expect(failedRules[1].returnedFactsResults.details.length).toBe(1)
-    expect(failedRules[1].returnedFactsResults.details[0].message).toBe('quantity is 155. It should be lessThanInclusive to adjustedPerimeter (60)')
+    expect(failedRules[1].ruleParams.description).toBe('Claimed perimeter should be less than the perimeter adjusted for perimeter features')
+    expect(failedRules[1].expandedHint).toBe('The claimed perimeter of 155 should be less than the perimeter adjusted for perimeter features of 60')
 
     expect(failedRules[2].ruleName).toBe('noActionsInTimePeriod')
-    expect(failedRules[2].returnedFactsResults.operator).toBe('any')
-    expect(failedRules[2].returnedFactsResults.details.length).toBe(2)
-    expect(failedRules[2].returnedFactsResults.details[0].message).toBe('yearsSinceLastAction is 3. It should be greaterThan to actionYearsThreshold (5)')
-    expect(failedRules[2].returnedFactsResults.details[1].message).toBe('yearsSinceLastAction is 3. It should be equal to null')
+    expect(failedRules[2].ruleParams.description).toBe('Parcel should not have had any recent previous actions of this type')
+    expect(failedRules[2].expandedHint).toBe('Parcel rejected because there was an action of type FG1 in the last 5 years')
   })
 })

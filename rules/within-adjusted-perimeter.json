@@ -1,6 +1,10 @@
 {
   "event": {
-    "type": "withinAdjustedPerimeter"
+    "type": "withinAdjustedPerimeter",
+    "params": {
+      "description": "Claimed perimeter should be less than the perimeter adjusted for perimeter features",
+      "hint": "The claimed perimeter of ${quantity} should be less than the perimeter adjusted for perimeter features of ${adjustedPerimeter}"
+    }
   },
   "conditions": {
     "all": [
