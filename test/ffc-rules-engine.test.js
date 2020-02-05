@@ -712,14 +712,20 @@ describe('Get failed rules with reasons', () => {
     await getEngine([rules.noActionsInTimePeriod, rules.notSSSI, rules.adjustedPerimeter])
       .on('failure', async (event, almanac, ruleResult) => {
         const util = require('util')
-        console.log(util.inspect({ event, almanac, ruleResult }, { depth: 8 }))
+        // console.log(util.inspect({ event, almanac, ruleResult }, { depth: 8 }))
+        console.log(util.inspect({ ruleResult }, { depth: 8 }))
         const returnedFactsResults = await getDetailsFromConditions(ruleResult.conditions.operator, ruleResult.conditions, almanac)
-        failedRules.push({ ruleName: ruleResult.event.type, returnedFactsResults })
+        failedRules.push({
+          ruleName: ruleResult.event.type,
+          ruleParams: ruleResult.event.params,
+          returnedFactsResults
+        })
       })
       .run({ parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25'), quantity: 155 })
 
     expect(failedRules.length).toBe(3)
     expect(failedRules[0].ruleName).toBe('notSSSI')
+    expect(failedRules[0].ruleParams.description).toBe('Parcel should not be in SSSI')
     expect(failedRules[0].returnedFactsResults.operator).toBe('all')
     expect(failedRules[0].returnedFactsResults.details.length).toBe(1)
     expect(failedRules[0].returnedFactsResults.details[0].message).toBe('parcel.sssi is true. It should be equal to false')
