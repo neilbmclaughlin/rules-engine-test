@@ -669,3 +669,70 @@ describe('Rule: Water pollution reduction zone', () => {
     expect(result.events.length).toBe(0)
   })
 })
+
+describe('Get failed rules with reasons', () => {
+  test('Adjusted perimeter', async () => {
+    const parcel = getParcelWithDefaults({
+      totalPerimeter: 75,
+      perimeterFeatures: [
+        {
+          type: 'lake',
+          length: 15
+        }
+      ],
+      previousActions: [
+        { date: '2018-01-25', identifier: 'FG1' }
+      ],
+      sssi: true
+    })
+    // expect.assertions(2)
+    async function getDetailsFromConditions (operator, conditions, almanac) {
+      const details = await Promise.all(conditions[operator].map(
+        async c => {
+          const returnValue = {
+            operator: c.operator,
+            fact: `${c.fact}${c.path ? c.path.substring(1) : ''}`,
+            factResult: c.factResult,
+            value: c.value && c.value.fact ? { fact: c.value.fact, value: (await almanac.factValue(c.value.fact)) } : { value: c.value },
+            result: c.result
+          }
+
+          returnValue.message =
+            `${returnValue.fact} is ${returnValue.factResult}. ` +
+            `It should be ${returnValue.operator} to ` +
+            (returnValue.value.fact ? `${returnValue.value.fact} (${returnValue.value.value})` : `${returnValue.value.value}`)
+
+          return returnValue
+        }
+      ))
+
+      return { operator, details }
+    }
+    const failedRules = []
+    await getEngine([rules.noActionsInTimePeriod, rules.notSSSI, rules.adjustedPerimeter])
+      .on('failure', async (event, almanac, ruleResult) => {
+        const util = require('util')
+        console.log(util.inspect({ event, almanac, ruleResult }, { depth: 8 }))
+        const returnedFactsResults = await getDetailsFromConditions(ruleResult.conditions.operator, ruleResult.conditions, almanac)
+        failedRules.push({ ruleName: ruleResult.event.type, returnedFactsResults })
+      })
+      .run({ parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25'), quantity: 155 })
+
+    expect(failedRules.length).toBe(3)
+    expect(failedRules[0].ruleName).toBe('notSSSI')
+    expect(failedRules[0].returnedFactsResults.operator).toBe('all')
+    expect(failedRules[0].returnedFactsResults.details.length).toBe(1)
+    expect(failedRules[0].returnedFactsResults.details[0].message).toBe('parcel.sssi is true. It should be equal to false')
+
+    expect(failedRules[1].ruleName).toBe('withinAdjustedPerimeter')
+    expect(failedRules[1].returnedFactsResults.operator).toBe('all')
+    expect(failedRules[1].returnedFactsResults.details.length).toBe(1)
+    expect(failedRules[1].returnedFactsResults.details[0].message).toBe('quantity is 155. It should be lessThanInclusive to adjustedPerimeter (60)')
+
+    expect(failedRules[2].ruleName).toBe('noActionsInTimePeriod')
+    expect(failedRules[2].returnedFactsResults.operator).toBe('any')
+    expect(failedRules[2].returnedFactsResults.details.length).toBe(2)
+    expect(failedRules[2].returnedFactsResults.details[0].message).toBe('yearsSinceLastAction is 3. It should be greaterThan to actionYearsThreshold (5)')
+    expect(failedRules[2].returnedFactsResults.details[1].message).toBe('yearsSinceLastAction is 3. It should be equal to null')
+  })
+})

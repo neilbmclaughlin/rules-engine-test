@@ -5,10 +5,10 @@
   "conditions": {
     "all": [
       {
-        "fact": "adjustedPerimeter",
-        "operator": "greaterThanInclusive",
+        "fact": "quantity",
+        "operator": "lessThanInclusive",
         "value": {
-          "fact": "quantity"
+          "fact": "adjustedPerimeter"
         }
       }
     ]
