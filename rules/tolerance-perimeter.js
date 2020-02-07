@@ -1,0 +1,16 @@
+module.exports = {
+  event: {
+    type: 'withinTolerancePerimeter'
+  },
+  conditions: {
+    all: [
+      {
+        fact: 'toleranceUpperLimit',
+        operator: 'greaterThanInclusive',
+        value: {
+          fact: 'quantity'
+        }
+      }
+    ]
+  }
+}

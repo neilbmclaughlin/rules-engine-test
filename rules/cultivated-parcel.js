@@ -1,0 +1,18 @@
+module.exports = {
+  event: {
+    type: 'cultivated'
+  },
+  conditions: {
+    all: [
+      {
+        fact: 'parcel',
+        path: '$.landCoverClass',
+        operator: 'in',
+        value: [
+          110,
+          670
+        ]
+      }
+    ]
+  }
+}
