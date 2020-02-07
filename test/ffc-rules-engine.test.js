@@ -538,7 +538,7 @@ describe('allRulesPass', () => {
 })
 
 describe('Requested facts are appended to the response object', () => {
-  test('Adjusted perimeter', async () => {
+  test('Adjusted perimeter bounds', async () => {
     const parcel = getParcelWithDefaults({
       totalPerimeter: 75,
       perimeterFeatures: [
@@ -552,11 +552,14 @@ describe('Requested facts are appended to the response object', () => {
     const result = await runEngine(
       [rules.adjustedPerimeter],
       { parcel, actionId: 'FG1', actionYearsThreshold: 2, quantity: 50, referenceDate: moment('2020-01-25') },
-      ['adjustedPerimeter']
+      ['adjustedPerimeterBounds']
     )
 
     expect(result.facts).toEqual({
-      adjustedPerimeter: parcel.totalPerimeter - parcel.perimeterFeatures[0].length
+      adjustedPerimeterBounds: {
+        lower: 0,
+        upper: parcel.totalPerimeter - parcel.perimeterFeatures[0].length
+      }
     })
   })
 
@@ -643,13 +646,13 @@ describe('Requested facts are appended to the response object', () => {
     const result = await runEngine(
       [rules.adjustedPerimeter],
       { parcel, actionId: 'FG1', quantity: 150, referenceDate },
-      ['adjustedPerimeter', 'yearsSinceLastAction']
+      ['adjustedPerimeterBounds', 'yearsSinceLastAction']
     )
 
     expect(result.events.length).toBe(0)
 
     expect(result.facts).toEqual({
-      adjustedPerimeter: parcel.totalPerimeter - parcel.perimeterFeatures[0].length,
+      adjustedPerimeterBounds: { lower: 0, upper: parcel.totalPerimeter - parcel.perimeterFeatures[0].length },
       yearsSinceLastAction: referenceDate.diff(moment(parcel.previousActions[0].date), 'years', true)
     })
   })
@@ -695,19 +698,21 @@ describe('Get failed rules with reasons', () => {
         // console.log(util.inspect({ ruleResult }, { depth: 8 }))
         const params = ruleResult.event.params
 
+        const factReplacer = async (a, factFullPath) => {
+          const [name, path] = factFullPath.split('.')
+          return almanac.factValue(name, {}, (path ? `$.${path}` : path))
+        }
+
         failedRules.push({
           name: ruleResult.event.type,
           description: ruleResult.event.params.description,
-          expandedHint: params.hint ? await stringReplaceAsync(params.hint, /\${(.*?)}/g, async (a, b) => almanac.factValue(b)) : null,
+          expandedHint: params.hint ? await stringReplaceAsync(params.hint, /\${(.*?)}/g, factReplacer) : null,
           inputBounds: params.inputBounds
-            ? {
-              lower: await almanac.factValue(params.inputBounds.lower),
-              upper: await almanac.factValue(params.inputBounds.upper)
-            }
+            ? await almanac.factValue(params.inputBounds)
             : {}
         })
       })
-      .run({ parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25'), quantity: 155, lowerInputBound: 0 })
+      .run({ parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25'), quantity: 155 })
 
     expect(failedRules.length).toBe(3)
     expect(failedRules).toContainEqual({
@@ -719,7 +724,7 @@ describe('Get failed rules with reasons', () => {
     expect(failedRules).toContainEqual({
       name: 'withinAdjustedPerimeter',
       description: 'Claimed perimeter should be less than the perimeter adjusted for perimeter features',
-      expandedHint: 'The claimed perimeter of 155 should be less than the perimeter adjusted for perimeter features of 60',
+      expandedHint: 'The claimed perimeter of 155 should be within the range adjusted for perimeter features (0 to 60)',
       inputBounds: { lower: 0, upper: 60 }
     })
     expect(failedRules).toContainEqual({

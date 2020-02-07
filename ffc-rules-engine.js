@@ -34,9 +34,6 @@ async function runEngine (rules, options, outputFacts = []) {
   if (!options.referenceDate) {
     options.referenceDate = moment()
   }
-  if (!options.lowerInputBound) {
-    options.lowerInputBound = 0
-  }
 
   return getEngine(rules).run(options).then(
     async ({ events, almanac }) => {
