@@ -1,7 +1,6 @@
 const moment = require('moment')
-const stringReplaceAsync = require('string-replace-async')
 
-const { allRulesPass, runEngine, getEngine, rules } = require('../ffc-rules-engine')
+const { runRules, allRulesPass, runEngine, rules } = require('../ffc-rules-engine')
 
 function getParcelWithDefaults (options) {
   return {
@@ -654,44 +653,16 @@ describe('Rule: Water pollution reduction zone', () => {
   })
 })
 
-async function runEngine2 (parcel, rules, options) {
-  const failedRules = []
-  await getEngine(rules)
-    .on('failure', async (event, almanac, ruleResult) => {
-      // const util = require('util')
-      // console.log(util.inspect({ ruleResult }, { depth: 8 }))
-      const params = ruleResult.event.params
-
-      const factReplacer = async (a, factFullPath) => {
-        const [name, path] = factFullPath.split('.')
-        return almanac.factValue(name, {}, (path ? `$.${path}` : path))
-      }
-
-      failedRules.push({
-        name: ruleResult.event.type,
-        description: ruleResult.event.params.description,
-        expandedHint: params.hint ? await stringReplaceAsync(params.hint, /\${(.*?)}/g, factReplacer) : null,
-        inputBounds: params.inputBounds
-          ? await almanac.factValue(params.inputBounds)
-          : {}
-      })
-    })
-    .run(options)
-    .catch(err => console.log(err))
-
-  return failedRules
-}
-
 describe('Get failed rules with reasons', () => {
   test('Perimeter', async () => {
     const parcel = getParcelWithDefaults({
       totalPerimeter: 75
     })
 
-    const failedRules = await runEngine2(
-      parcel,
+    const failedRules = await runRules(
       [rules.perimeter],
-      { parcel, quantity: -1 })
+      { parcel, quantity: -1 }
+    )
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
@@ -712,10 +683,10 @@ describe('Get failed rules with reasons', () => {
       ]
     })
 
-    const failedRules = await runEngine2(
-      parcel,
+    const failedRules = await runRules(
       [rules.adjustedPerimeter],
-      { parcel, quantity: -1 })
+      { parcel, quantity: -1 }
+    )
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
@@ -730,10 +701,10 @@ describe('Get failed rules with reasons', () => {
       totalArea: 75
     })
 
-    const failedRules = await runEngine2(
-      parcel,
+    const failedRules = await runRules(
       [rules.area],
-      { parcel, quantity: -1 })
+      { parcel, quantity: -1 }
+    )
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
@@ -754,10 +725,10 @@ describe('Get failed rules with reasons', () => {
       ]
     })
 
-    const failedRules = await runEngine2(
-      parcel,
+    const failedRules = await runRules(
       [rules.pondlessArea],
-      { parcel, quantity: -1 })
+      { parcel, quantity: -1 }
+    )
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
@@ -772,10 +743,10 @@ describe('Get failed rules with reasons', () => {
       sssi: true
     })
 
-    const failedRules = await runEngine2(
-      parcel,
+    const failedRules = await runRules(
       [rules.notSSSI],
-      { parcel })
+      { parcel }
+    )
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
@@ -792,10 +763,10 @@ describe('Get failed rules with reasons', () => {
       ]
     })
 
-    const failedRules = await runEngine2(
-      parcel,
+    const failedRules = await runRules(
       [rules.noActionsInTimePeriod],
-      { parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25') })
+      { parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25') }
+    )
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
@@ -810,10 +781,10 @@ describe('Get failed rules with reasons', () => {
       inWaterPollutionZone: false
     })
 
-    const failedRules = await runEngine2(
-      parcel,
+    const failedRules = await runRules(
       [rules.inWaterPollutionZone],
-      { parcel })
+      { parcel }
+    )
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
@@ -828,10 +799,10 @@ describe('Get failed rules with reasons', () => {
       landCoverClass: 999
     })
 
-    const failedRules = await runEngine2(
-      parcel,
+    const failedRules = await runRules(
       [rules.cultivatedParcel],
-      { parcel })
+      { parcel }
+    )
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({

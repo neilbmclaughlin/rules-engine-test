@@ -3,6 +3,7 @@ const moment = require('moment')
 const RuleEngine = require('json-rules-engine')
 const rules = require('./rules')
 const validateParcel = require('./parcel-validation')
+const stringReplaceAsync = require('string-replace-async')
 
 function getEngine (rules) {
   const engine = new RuleEngine.Engine()
@@ -42,12 +43,39 @@ async function runEngine (rules, options, outputFacts = []) {
     })
 }
 
+async function runRules (rules, options) {
+  const failedRules = []
+  await getEngine(rules)
+    .on('failure', async (event, almanac, ruleResult) => {
+      const params = ruleResult.event.params
+
+      const factReplacer = async (a, factFullPath) => {
+        const [name, path] = factFullPath.split('.')
+        return almanac.factValue(name, {}, (path ? `$.${path}` : path))
+      }
+
+      failedRules.push({
+        name: ruleResult.event.type,
+        description: ruleResult.event.params.description,
+        expandedHint: params.hint ? await stringReplaceAsync(params.hint, /\${(.*?)}/g, factReplacer) : null,
+        inputBounds: params.inputBounds
+          ? await almanac.factValue(params.inputBounds)
+          : {}
+      })
+    })
+    .run(options)
+    .catch(err => console.log(err))
+
+  return failedRules
+}
+
 async function allRulesPass (ruleset, options) {
   const result = await runEngine(ruleset, options)
   return result.events.length === ruleset.length
 }
 
 module.exports = {
+  runRules,
   runEngine,
   getEngine,
   allRulesPass,
