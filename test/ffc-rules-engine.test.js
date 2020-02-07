@@ -717,7 +717,7 @@ describe('Get failed rules with reasons', () => {
     const failedRules = await runEngine2(
       parcel,
       [rules.adjustedPerimeter],
-      { parcel, actionYearsThreshold: 5, referenceDate: moment('2021-01-25'), quantity: 155 })
+      { parcel, quantity: 155 })
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
