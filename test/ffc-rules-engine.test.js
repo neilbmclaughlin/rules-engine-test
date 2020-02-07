@@ -131,18 +131,6 @@ describe('Rule: Claimed perimeter <= actual perimeter', () => {
 
     expect(result.events.length).toBe(0)
   })
-  test('Returns the claimed perimeter as result', async () => {
-    // Note: this test is demonstrating how to return a calculated maximum value for a perimeter
-    // It is not testing any of our code
-    expect.assertions(2)
-    await getEngine([rules.perimeter])
-      .on('success', (event, almanac, ruleResult) => {
-        const returnedFactsResults = ruleResult.conditions.all.map((c) => c.factResult)
-        expect(returnedFactsResults.length).toBe(1)
-        expect(returnedFactsResults[0]).toBe(75)
-      })
-      .run({ parcel, quantity: 0 })
-  })
 })
 
 describe('Rule: Claimed perimeter <= perimeter adjusted to take into account perimeter features', () => {
@@ -297,18 +285,6 @@ describe('Rule: Claimed area <= actual area', () => {
     )
 
     expect(result.events.length).toBe(0)
-  })
-  test('Returns the claimed area as result', async () => {
-    // Note: this test is demonstrating how to return a calculated maximum value for a area
-    // It is not testing any of our code
-    expect.assertions(2)
-    await getEngine([rules.area])
-      .on('success', (event, almanac, ruleResult) => {
-        const returnedFactsResults = ruleResult.conditions.all.map((c) => c.factResult)
-        expect(returnedFactsResults.length).toBe(1)
-        expect(returnedFactsResults[0]).toBe(75)
-      })
-      .run({ parcel, quantity: 0 })
   })
 })
 
@@ -698,11 +674,48 @@ async function runEngine2 (parcel, rules, options) {
       })
     })
     .run(options)
+    .catch(err => console.log(err))
 
   return failedRules
 }
 
 describe('Get failed rules with reasons', () => {
+  test('Perimeter', async () => {
+    const parcel = getParcelWithDefaults({
+      totalPerimeter: 75
+    })
+
+    const failedRules = await runEngine2(
+      parcel,
+      [rules.perimeter],
+      { parcel, quantity: 155 })
+
+    expect(failedRules.length).toBe(1)
+    expect(failedRules).toContainEqual({
+      name: 'withinPerimeter',
+      description: 'Claimed perimeter should be less than the total perimeter',
+      expandedHint: 'The claimed perimeter of 155 should be within the range (0 to 75)',
+      inputBounds: { lower: 0, upper: 75 }
+    })
+  })
+  test('Area', async () => {
+    const parcel = getParcelWithDefaults({
+      totalArea: 75
+    })
+
+    const failedRules = await runEngine2(
+      parcel,
+      [rules.area],
+      { parcel, quantity: 155 })
+
+    expect(failedRules.length).toBe(1)
+    expect(failedRules).toContainEqual({
+      name: 'withinArea',
+      description: 'Claimed area should be less than the total area',
+      expandedHint: 'The claimed area of 155 should be within the range (0 to 75)',
+      inputBounds: { lower: 0, upper: 75 }
+    })
+  })
   test('Adjusted perimeter', async () => {
     const parcel = getParcelWithDefaults({
       totalPerimeter: 75,

@@ -1,15 +1,21 @@
 module.exports = {
   event: {
-    type: 'withinArea'
+    type: 'withinArea',
+    params: {
+      description: 'Claimed area should be less than the total area',
+      // eslint-disable-next-line no-template-curly-in-string
+      hint: 'The claimed area of ${quantity} should be within the range (${areaBounds.lower} to ${areaBounds.upper})',
+      inputBounds: 'areaBounds'
+    }
   },
   conditions: {
     all: [
       {
-        fact: 'parcel',
-        path: '$.totalArea',
-        operator: 'greaterThanInclusive',
+        fact: 'quantity',
+        operator: 'lessThanInclusive',
         value: {
-          fact: 'quantity'
+          fact: 'areaBounds',
+          path: '$.upper'
         }
       }
     ]
