@@ -6,6 +6,7 @@ module.exports = {
       // eslint-disable-next-line no-template-curly-in-string
       hint: 'The claimed perimeter of ${quantity} should be less than the perimeter adjusted for perimeter features of ${adjustedPerimeter}',
       inputBounds: {
+        lower: 'lowerInputBound',
         upper: 'adjustedPerimeter'
       }
     }
@@ -18,8 +19,14 @@ module.exports = {
         value: {
           fact: 'adjustedPerimeter'
         }
+      },
+      {
+        fact: 'quantity',
+        operator: 'greaterThan',
+        value: {
+          fact: 'lowerInputBound'
+        }
       }
     ]
-  },
-  onFailure: (event, almanac) => { almanac.addRuntimeFact('bounds', { upper: 100, lower: 1 }) }
+  }
 }

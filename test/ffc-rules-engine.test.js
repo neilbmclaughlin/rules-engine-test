@@ -696,30 +696,37 @@ describe('Get failed rules with reasons', () => {
         const params = ruleResult.event.params
 
         failedRules.push({
-          ruleName: ruleResult.event.type,
-          ruleParams: ruleResult.event.params,
+          name: ruleResult.event.type,
+          description: ruleResult.event.params.description,
           expandedHint: params.hint ? await stringReplaceAsync(params.hint, /\${(.*?)}/g, async (a, b) => almanac.factValue(b)) : null,
           inputBounds: params.inputBounds
-            ? { upper: await almanac.factValue(params.inputBounds.upper) }
+            ? {
+              lower: await almanac.factValue(params.inputBounds.lower),
+              upper: await almanac.factValue(params.inputBounds.upper)
+            }
             : {}
         })
       })
-      .run({ parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25'), quantity: 155 })
+      .run({ parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25'), quantity: 155, lowerInputBound: 0 })
 
     expect(failedRules.length).toBe(3)
-    expect(failedRules[0].ruleName).toBe('notSSSI')
-    expect(failedRules[0].ruleParams.description).toBe('Parcel should not be in an SSSI')
-    expect(failedRules[0].expandedHint).toBe(null)
-    expect(failedRules[0].inputBounds).toEqual({})
-
-    expect(failedRules[1].ruleName).toBe('withinAdjustedPerimeter')
-    expect(failedRules[1].ruleParams.description).toBe('Claimed perimeter should be less than the perimeter adjusted for perimeter features')
-    expect(failedRules[1].expandedHint).toBe('The claimed perimeter of 155 should be less than the perimeter adjusted for perimeter features of 60')
-    expect(failedRules[1].inputBounds).toEqual({ upper: 60 })
-
-    expect(failedRules[2].ruleName).toBe('noActionsInTimePeriod')
-    expect(failedRules[2].ruleParams.description).toBe('Parcel should not have had any recent previous actions of this type')
-    expect(failedRules[2].expandedHint).toBe('Parcel rejected because there was an action of type FG1 in the last 5 years')
-    expect(failedRules[2].inputBounds).toEqual({})
+    expect(failedRules).toContainEqual({
+      name: 'notSSSI',
+      description: 'Parcel should not be in an SSSI',
+      expandedHint: null,
+      inputBounds: {}
+    })
+    expect(failedRules).toContainEqual({
+      name: 'withinAdjustedPerimeter',
+      description: 'Claimed perimeter should be less than the perimeter adjusted for perimeter features',
+      expandedHint: 'The claimed perimeter of 155 should be less than the perimeter adjusted for perimeter features of 60',
+      inputBounds: { lower: 0, upper: 60 }
+    })
+    expect(failedRules).toContainEqual({
+      name: 'noActionsInTimePeriod',
+      description: 'Parcel should not have had any recent previous actions of this type',
+      expandedHint: 'Parcel rejected because there was an action of type FG1 in the last 5 years',
+      inputBounds: {}
+    })
   })
 })
