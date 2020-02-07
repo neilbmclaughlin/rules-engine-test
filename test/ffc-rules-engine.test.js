@@ -693,12 +693,15 @@ describe('Get failed rules with reasons', () => {
       .on('failure', async (event, almanac, ruleResult) => {
         // const util = require('util')
         // console.log(util.inspect({ ruleResult }, { depth: 8 }))
-        const hint = ruleResult.event.params.hint
+        const params = ruleResult.event.params
 
         failedRules.push({
           ruleName: ruleResult.event.type,
           ruleParams: ruleResult.event.params,
-          expandedHint: hint ? await stringReplaceAsync(hint, /\${(.*?)}/g, async (a, b) => almanac.factValue(b)) : ''
+          expandedHint: params.hint ? await stringReplaceAsync(params.hint, /\${(.*?)}/g, async (a, b) => almanac.factValue(b)) : null,
+          inputBounds: params.inputBounds
+            ? { upper: await almanac.factValue(params.inputBounds.upper) }
+            : {}
         })
       })
       .run({ parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25'), quantity: 155 })
@@ -706,14 +709,17 @@ describe('Get failed rules with reasons', () => {
     expect(failedRules.length).toBe(3)
     expect(failedRules[0].ruleName).toBe('notSSSI')
     expect(failedRules[0].ruleParams.description).toBe('Parcel should not be in an SSSI')
-    expect(failedRules[0].ruleParams.hint).toBe(undefined)
+    expect(failedRules[0].expandedHint).toBe(null)
+    expect(failedRules[0].inputBounds).toEqual({})
 
     expect(failedRules[1].ruleName).toBe('withinAdjustedPerimeter')
     expect(failedRules[1].ruleParams.description).toBe('Claimed perimeter should be less than the perimeter adjusted for perimeter features')
     expect(failedRules[1].expandedHint).toBe('The claimed perimeter of 155 should be less than the perimeter adjusted for perimeter features of 60')
+    expect(failedRules[1].inputBounds).toEqual({ upper: 60 })
 
     expect(failedRules[2].ruleName).toBe('noActionsInTimePeriod')
     expect(failedRules[2].ruleParams.description).toBe('Parcel should not have had any recent previous actions of this type')
     expect(failedRules[2].expandedHint).toBe('Parcel rejected because there was an action of type FG1 in the last 5 years')
+    expect(failedRules[2].inputBounds).toEqual({})
   })
 })
