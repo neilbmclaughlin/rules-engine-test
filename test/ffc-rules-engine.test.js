@@ -688,13 +688,13 @@ describe('Get failed rules with reasons', () => {
     const failedRules = await runEngine2(
       parcel,
       [rules.perimeter],
-      { parcel, quantity: 155 })
+      { parcel, quantity: -1 })
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
       name: 'withinPerimeter',
       description: 'Claimed perimeter should be less than the total perimeter',
-      expandedHint: 'The claimed perimeter of 155 should be within the range (0 to 75)',
+      expandedHint: 'The claimed perimeter of -1 should be within the range (0 to 75)',
       inputBounds: { lower: 0, upper: 75 }
     })
   })
@@ -712,13 +712,13 @@ describe('Get failed rules with reasons', () => {
     const failedRules = await runEngine2(
       parcel,
       [rules.adjustedPerimeter],
-      { parcel, quantity: 155 })
+      { parcel, quantity: -1 })
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
       name: 'withinAdjustedPerimeter',
       description: 'Claimed perimeter should be less than the perimeter adjusted for perimeter features',
-      expandedHint: 'The claimed perimeter of 155 should be within the range adjusted for perimeter features (0 to 60)',
+      expandedHint: 'The claimed perimeter of -1 should be within the range adjusted for perimeter features (0 to 60)',
       inputBounds: { lower: 0, upper: 60 }
     })
   })
@@ -730,13 +730,13 @@ describe('Get failed rules with reasons', () => {
     const failedRules = await runEngine2(
       parcel,
       [rules.area],
-      { parcel, quantity: 155 })
+      { parcel, quantity: -1 })
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
       name: 'withinArea',
       description: 'Claimed area should be less than the total area',
-      expandedHint: 'The claimed area of 155 should be within the range (0 to 75)',
+      expandedHint: 'The claimed area of -1 should be within the range (0 to 75)',
       inputBounds: { lower: 0, upper: 75 }
     })
   })
@@ -754,13 +754,13 @@ describe('Get failed rules with reasons', () => {
     const failedRules = await runEngine2(
       parcel,
       [rules.pondlessArea],
-      { parcel, quantity: 155 })
+      { parcel, quantity: -1 })
 
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
       name: 'withinPondlessArea',
       description: 'Claimed area should be less than the area adjusted for area features',
-      expandedHint: 'The claimed area of 155 should be within the range adjusted for area features (0 to 72)',
+      expandedHint: 'The claimed area of -1 should be within the range adjusted for area features (0 to 72)',
       inputBounds: { lower: 0, upper: 72 }
     })
   })

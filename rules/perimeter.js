@@ -17,6 +17,14 @@ module.exports = {
           fact: 'perimeterBounds',
           path: '$.upper'
         }
+      },
+      {
+        fact: 'quantity',
+        operator: 'greaterThanInclusive',
+        value: {
+          fact: 'perimeterBounds',
+          path: '$.lower'
+        }
       }
     ]
   }

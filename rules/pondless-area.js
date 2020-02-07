@@ -17,6 +17,14 @@ module.exports = {
           fact: 'adjustedAreaBounds',
           path: '$.upper'
         }
+      },
+      {
+        fact: 'quantity',
+        operator: 'greaterThanInclusive',
+        value: {
+          fact: 'adjustedAreaBounds',
+          path: '$.lower'
+        }
       }
     ]
   }
