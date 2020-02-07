@@ -675,6 +675,33 @@ describe('Rule: Water pollution reduction zone', () => {
   })
 })
 
+async function runEngine2 (parcel, rules, options) {
+  const failedRules = []
+  await getEngine(rules)
+    .on('failure', async (event, almanac, ruleResult) => {
+      // const util = require('util')
+      // console.log(util.inspect({ ruleResult }, { depth: 8 }))
+      const params = ruleResult.event.params
+
+      const factReplacer = async (a, factFullPath) => {
+        const [name, path] = factFullPath.split('.')
+        return almanac.factValue(name, {}, (path ? `$.${path}` : path))
+      }
+
+      failedRules.push({
+        name: ruleResult.event.type,
+        description: ruleResult.event.params.description,
+        expandedHint: params.hint ? await stringReplaceAsync(params.hint, /\${(.*?)}/g, factReplacer) : null,
+        inputBounds: params.inputBounds
+          ? await almanac.factValue(params.inputBounds)
+          : {}
+      })
+    })
+    .run(options)
+
+  return failedRules
+}
+
 describe('Get failed rules with reasons', () => {
   test('Adjusted perimeter', async () => {
     const parcel = getParcelWithDefaults({
@@ -684,49 +711,53 @@ describe('Get failed rules with reasons', () => {
           type: 'lake',
           length: 15
         }
-      ],
-      previousActions: [
-        { date: '2018-01-25', identifier: 'FG1' }
-      ],
-      sssi: true
+      ]
     })
-    // expect.assertions(2)
-    const failedRules = []
-    await getEngine([rules.noActionsInTimePeriod, rules.notSSSI, rules.adjustedPerimeter])
-      .on('failure', async (event, almanac, ruleResult) => {
-        // const util = require('util')
-        // console.log(util.inspect({ ruleResult }, { depth: 8 }))
-        const params = ruleResult.event.params
 
-        const factReplacer = async (a, factFullPath) => {
-          const [name, path] = factFullPath.split('.')
-          return almanac.factValue(name, {}, (path ? `$.${path}` : path))
-        }
+    const failedRules = await runEngine2(
+      parcel,
+      [rules.adjustedPerimeter],
+      { parcel, actionYearsThreshold: 5, referenceDate: moment('2021-01-25'), quantity: 155 })
 
-        failedRules.push({
-          name: ruleResult.event.type,
-          description: ruleResult.event.params.description,
-          expandedHint: params.hint ? await stringReplaceAsync(params.hint, /\${(.*?)}/g, factReplacer) : null,
-          inputBounds: params.inputBounds
-            ? await almanac.factValue(params.inputBounds)
-            : {}
-        })
-      })
-      .run({ parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25'), quantity: 155 })
-
-    expect(failedRules.length).toBe(3)
-    expect(failedRules).toContainEqual({
-      name: 'notSSSI',
-      description: 'Parcel should not be in an SSSI',
-      expandedHint: null,
-      inputBounds: {}
-    })
+    expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
       name: 'withinAdjustedPerimeter',
       description: 'Claimed perimeter should be less than the perimeter adjusted for perimeter features',
       expandedHint: 'The claimed perimeter of 155 should be within the range adjusted for perimeter features (0 to 60)',
       inputBounds: { lower: 0, upper: 60 }
     })
+  })
+  test('Not in SSSI', async () => {
+    const parcel = getParcelWithDefaults({
+      sssi: true
+    })
+
+    const failedRules = await runEngine2(
+      parcel,
+      [rules.notSSSI],
+      { parcel })
+
+    expect(failedRules.length).toBe(1)
+    expect(failedRules).toContainEqual({
+      name: 'notSSSI',
+      description: 'Parcel should not be in an SSSI',
+      expandedHint: null,
+      inputBounds: {}
+    })
+  })
+  test('No actions in time period', async () => {
+    const parcel = getParcelWithDefaults({
+      previousActions: [
+        { date: '2018-01-25', identifier: 'FG1' }
+      ]
+    })
+
+    const failedRules = await runEngine2(
+      parcel,
+      [rules.noActionsInTimePeriod],
+      { parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25') })
+
+    expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
       name: 'noActionsInTimePeriod',
       description: 'Parcel should not have had any recent previous actions of this type',
