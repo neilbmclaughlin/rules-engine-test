@@ -1,6 +1,9 @@
 module.exports = {
   event: {
-    type: 'inWaterPollutionZone'
+    type: 'inWaterPollutionZone',
+    params: {
+      description: 'Parcel should be in a water pollution zone'
+    }
   },
   conditions: {
     all: [

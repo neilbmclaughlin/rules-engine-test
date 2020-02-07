@@ -1,6 +1,9 @@
 module.exports = {
   event: {
-    type: 'hasReintroducedGrazing'
+    type: 'hasReintroducedGrazing',
+    params: {
+      description: 'Grazing has been reintroduced for the parcel'
+    }
   },
   conditions: {
     all: [

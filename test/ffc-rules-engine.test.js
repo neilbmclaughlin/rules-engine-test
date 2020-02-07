@@ -805,4 +805,40 @@ describe('Get failed rules with reasons', () => {
       inputBounds: {}
     })
   })
+  test('Not in water pollution zone', async () => {
+    const parcel = getParcelWithDefaults({
+      inWaterPollutionZone: false
+    })
+
+    const failedRules = await runEngine2(
+      parcel,
+      [rules.inWaterPollutionZone],
+      { parcel })
+
+    expect(failedRules.length).toBe(1)
+    expect(failedRules).toContainEqual({
+      name: 'inWaterPollutionZone',
+      description: 'Parcel should be in a water pollution zone',
+      expandedHint: null,
+      inputBounds: {}
+    })
+  })
+  test('Not in cultivated land cover class', async () => {
+    const parcel = getParcelWithDefaults({
+      landCoverClass: 999
+    })
+
+    const failedRules = await runEngine2(
+      parcel,
+      [rules.cultivatedParcel],
+      { parcel })
+
+    expect(failedRules.length).toBe(1)
+    expect(failedRules).toContainEqual({
+      name: 'cultivated',
+      description: 'Parcel should be a cultivated parcel',
+      expandedHint: null,
+      inputBounds: {}
+    })
+  })
 })

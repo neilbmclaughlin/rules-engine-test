@@ -1,6 +1,9 @@
 module.exports = {
   event: {
-    type: 'cultivated'
+    type: 'cultivated',
+    params: {
+      description: 'Parcel should be a cultivated parcel'
+    }
   },
   conditions: {
     all: [

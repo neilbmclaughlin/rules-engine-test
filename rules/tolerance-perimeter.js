@@ -1,6 +1,9 @@
 module.exports = {
   event: {
-    type: 'withinTolerancePerimeter'
+    type: 'withinTolerancePerimeter',
+    params: {
+      description: 'Perimeter should be within tolerance'
+    }
   },
   conditions: {
     all: [
