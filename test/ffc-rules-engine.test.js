@@ -553,11 +553,14 @@ describe('Requested facts are appended to the response object', () => {
     const result = await runEngine(
       [rules.pondlessArea],
       { parcel, actionId: 'SW6', actionYearsThreshold: 2, quantity: 2, referenceDate: moment('2020-01-25') },
-      ['pondlessArea']
+      ['pondlessAreaBounds']
     )
 
     expect(result.facts).toEqual({
-      pondlessArea: parcel.totalArea - parcel.areaFeatures[0].areaCovered
+      pondlessAreaBounds: {
+        lower: 0,
+        upper: parcel.totalArea - parcel.areaFeatures[0].areaCovered
+      }
     })
   })
 
@@ -759,8 +762,8 @@ describe('Get failed rules with reasons', () => {
     expect(failedRules.length).toBe(1)
     expect(failedRules).toContainEqual({
       name: 'withinPondlessArea',
-      description: 'Claimed area should be less than the area adjusted for area features',
-      expandedHint: 'The claimed area of -1 should be within the range adjusted for area features (0 to 72)',
+      description: 'Claimed area should be less than the area adjusted for ponds',
+      expandedHint: 'The claimed area of -1 should be within the range adjusted for ponds (0 to 72)',
       inputBounds: { lower: 0, upper: 72 }
     })
   })

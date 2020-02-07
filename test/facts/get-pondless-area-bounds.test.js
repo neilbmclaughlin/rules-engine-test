@@ -1,4 +1,4 @@
-const getPondlessAreaFact = require('../../facts/get-pondless-area')
+const getPondlessAreaFact = require('../../facts/get-pondless-area-bounds')
 
 describe('get-pondless-area fact', () => {
   test('should return total area if there are no pond features', async () => {
@@ -8,7 +8,7 @@ describe('get-pondless-area fact', () => {
       }
     }
     const result = await getPondlessAreaFact({}, fakeAlamanc)
-    expect(result).toBe(50)
+    expect(result).toEqual({ lower: 0, upper: 50 })
   })
 
   test('should return total area if there are features which are not ponds', async () => {
@@ -24,7 +24,7 @@ describe('get-pondless-area fact', () => {
       }
     }
     const result = await getPondlessAreaFact({}, fakeAlamanc)
-    expect(result).toBe(50)
+    expect(result).toEqual({ lower: 0, upper: 50 })
   })
 
   test('should return adjusted area if there are features which are ponds', async () => {
@@ -41,6 +41,6 @@ describe('get-pondless-area fact', () => {
       }
     }
     const result = await getPondlessAreaFact({}, fakeAlamanc)
-    expect(result).toBe(110)
+    expect(result).toEqual({ lower: 0, upper: 110 })
   })
 })
