@@ -44,6 +44,12 @@ async function runEngine (rules, options, outputFacts = []) {
 }
 
 async function runRules (rules, options) {
+  validateParcel(options.parcel)
+
+  if (!options.referenceDate) {
+    options.referenceDate = moment()
+  }
+
   const failedRules = []
   await getEngine(rules)
     .on('failure', async (event, almanac, ruleResult) => {
@@ -70,8 +76,13 @@ async function runRules (rules, options) {
 }
 
 async function allRulesPass (ruleset, options) {
-  const result = await runEngine(ruleset, options)
-  return result.events.length === ruleset.length
+  const failedRules = await runRules(ruleset, options)
+  return failedRules.length === 0
+}
+
+async function someRulesPass (ruleset, options) {
+  const failedRules = await runRules(ruleset, options)
+  return failedRules.length >= 0 && failedRules.length < ruleset.length
 }
 
 module.exports = {
@@ -79,5 +90,6 @@ module.exports = {
   runEngine,
   getEngine,
   allRulesPass,
+  someRulesPass,
   rules
 }
