@@ -698,24 +698,6 @@ describe('Get failed rules with reasons', () => {
       inputBounds: { lower: 0, upper: 75 }
     })
   })
-  test('Area', async () => {
-    const parcel = getParcelWithDefaults({
-      totalArea: 75
-    })
-
-    const failedRules = await runEngine2(
-      parcel,
-      [rules.area],
-      { parcel, quantity: 155 })
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules).toContainEqual({
-      name: 'withinArea',
-      description: 'Claimed area should be less than the total area',
-      expandedHint: 'The claimed area of 155 should be within the range (0 to 75)',
-      inputBounds: { lower: 0, upper: 75 }
-    })
-  })
   test('Adjusted perimeter', async () => {
     const parcel = getParcelWithDefaults({
       totalPerimeter: 75,
@@ -738,6 +720,48 @@ describe('Get failed rules with reasons', () => {
       description: 'Claimed perimeter should be less than the perimeter adjusted for perimeter features',
       expandedHint: 'The claimed perimeter of 155 should be within the range adjusted for perimeter features (0 to 60)',
       inputBounds: { lower: 0, upper: 60 }
+    })
+  })
+  test('Area', async () => {
+    const parcel = getParcelWithDefaults({
+      totalArea: 75
+    })
+
+    const failedRules = await runEngine2(
+      parcel,
+      [rules.area],
+      { parcel, quantity: 155 })
+
+    expect(failedRules.length).toBe(1)
+    expect(failedRules).toContainEqual({
+      name: 'withinArea',
+      description: 'Claimed area should be less than the total area',
+      expandedHint: 'The claimed area of 155 should be within the range (0 to 75)',
+      inputBounds: { lower: 0, upper: 75 }
+    })
+  })
+  test('Adjusted Area', async () => {
+    const parcel = getParcelWithDefaults({
+      totalArea: 75,
+      areaFeatures: [
+        {
+          type: 'pond',
+          areaCovered: 3
+        }
+      ]
+    })
+
+    const failedRules = await runEngine2(
+      parcel,
+      [rules.pondlessArea],
+      { parcel, quantity: 155 })
+
+    expect(failedRules.length).toBe(1)
+    expect(failedRules).toContainEqual({
+      name: 'withinPondlessArea',
+      description: 'Claimed area should be less than the area adjusted for area features',
+      expandedHint: 'The claimed area of 155 should be within the range adjusted for area features (0 to 72)',
+      inputBounds: { lower: 0, upper: 72 }
     })
   })
   test('Not in SSSI', async () => {

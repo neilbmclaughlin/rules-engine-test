@@ -1,14 +1,21 @@
 module.exports = {
   event: {
-    type: 'withinPondlessArea'
+    type: 'withinPondlessArea',
+    params: {
+      description: 'Claimed area should be less than the area adjusted for area features',
+      // eslint-disable-next-line no-template-curly-in-string
+      hint: 'The claimed area of ${quantity} should be within the range adjusted for area features (${adjustedAreaBounds.lower} to ${adjustedAreaBounds.upper})',
+      inputBounds: 'adjustedAreaBounds'
+    }
   },
   conditions: {
     all: [
       {
-        fact: 'pondlessArea',
-        operator: 'greaterThanInclusive',
+        fact: 'quantity',
+        operator: 'lessThanInclusive',
         value: {
-          fact: 'quantity'
+          fact: 'adjustedAreaBounds',
+          path: '$.upper'
         }
       }
     ]
