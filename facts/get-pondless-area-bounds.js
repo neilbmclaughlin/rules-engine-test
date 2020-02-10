@@ -6,5 +6,8 @@ module.exports = async function getAdjustedArea (params, almanac) {
     .map(feature => feature.areaCovered)
     .reduce((total, p) => total + p, 0)
 
-  return parcel.totalArea - featureArea
+  return {
+    lower: 0,
+    upper: parcel.totalArea - featureArea
+  }
 }

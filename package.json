@@ -43,6 +43,7 @@
     "json-rules-engine": "^5.0.2",
     "jsonschema": "^1.2.5",
     "moment": "^2.24.0",
+    "string-replace-async": "^1.2.1",
     "verror": "^1.10.0"
   },
   "repository": {

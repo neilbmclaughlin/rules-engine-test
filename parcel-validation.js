@@ -1,5 +1,5 @@
 var { validate } = require('jsonschema')
-const parcelSchema = require('./parcel-schema.json')
+const parcelSchema = require('./schemas/parcel.json')
 const VError = require('verror')
 
 function validateParcel (parcel) {
