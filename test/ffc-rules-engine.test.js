@@ -18,15 +18,24 @@ function getParcelWithDefaults (options) {
   }
 }
 
+const expectRulesToPass = async (rules, options) => {
+  const failedRules = await runRules(rules, options)
+  expect(failedRules.length).toBe(0)
+}
+
+const expectRulesToFail = async (rules, options, reasons) => {
+  const failedRules = await runRules(rules, options)
+  expect(failedRules.length).toBe(1)
+  expect(failedRules).toContainEqual(reasons)
+}
+
 describe('Rule: No previous actions within time period', () => {
   test('Passes when there are no previous actions', async () => {
     const parcel = getParcelWithDefaults({ previousActions: [] })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.noActionsInTimePeriod],
       { parcel, actionId: 'FG1', actionYearsThreshold: 2, referenceDate: moment('2020-01-25') }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Passes when matching last action is over 2 years ago and threshold check is 2 years', async () => {
     const parcel = getParcelWithDefaults({
@@ -34,12 +43,10 @@ describe('Rule: No previous actions within time period', () => {
         { date: '2017-04-28', identifier: 'FG1' }
       ]
     })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.noActionsInTimePeriod],
       { parcel, actionId: 'FG1', actionYearsThreshold: 2, referenceDate: moment('2020-01-25') }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Fails when matching last action is 2 years ago and threshold check is 5 years', async () => {
     const parcel = getParcelWithDefaults({
@@ -47,13 +54,16 @@ describe('Rule: No previous actions within time period', () => {
         { date: '2018-01-25', identifier: 'FG1' }
       ]
     })
-    const failedRules = await runRules(
+    await expectRulesToFail(
       [rules.noActionsInTimePeriod],
-      { parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25') }
+      { parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25') },
+      {
+        name: 'noActionsInTimePeriod',
+        description: 'Parcel should not have had any recent previous actions of this type',
+        expandedHint: 'Parcel rejected because there was an action of type FG1 in the last 5 years',
+        inputBounds: {}
+      }
     )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules[0].name).toBe('noActionsInTimePeriod')
   })
   test('Passes when matching last action is over 2 years ago and threshold check is 5 years', async () => {
     const parcel = getParcelWithDefaults({
@@ -61,12 +71,10 @@ describe('Rule: No previous actions within time period', () => {
         { date: '2017-04-28', identifier: 'XYZ' }
       ]
     })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.noActionsInTimePeriod],
       { parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2020-01-25') }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('If no date passed to runEngine then date defaults to now and rule fails', async () => {
     const twoYearsLessADayFromNow = moment().subtract(2, 'years').add(1, 'day').format('YYYY-MM-DD')
@@ -75,142 +83,144 @@ describe('Rule: No previous actions within time period', () => {
         { date: twoYearsLessADayFromNow, identifier: 'FG1' }
       ]
     })
-    const failedRules = await runRules(
+    await expectRulesToFail(
       [rules.noActionsInTimePeriod],
-      { parcel, actionId: 'FG1', actionYearsThreshold: 2 }
+      { parcel, actionId: 'FG1', actionYearsThreshold: 2 },
+      {
+        name: 'noActionsInTimePeriod',
+        description: 'Parcel should not have had any recent previous actions of this type',
+        expandedHint: 'Parcel rejected because there was an action of type FG1 in the last 2 years',
+        inputBounds: {}
+      }
     )
-
-    expect(failedRules.length).toBe(1)
   })
 })
 
 describe('Rule: Not SSSI', () => {
   test('Fails when parcel is SSSI', async () => {
     const parcel = getParcelWithDefaults({ sssi: true })
-    const failedRules = await runRules([rules.notSSSI], { parcel })
-
-    expect(failedRules.length).toBe(1)
+    await expectRulesToFail(
+      [rules.notSSSI],
+      { parcel },
+      {
+        name: 'notSSSI',
+        description: 'Parcel should not be in an SSSI',
+        expandedHint: null,
+        inputBounds: {}
+      }
+    )
   })
   test('Passes when parcel is not SSSI', async () => {
     const parcel = getParcelWithDefaults({ sssi: false })
-    const failedRules = await runRules([rules.notSSSI], { parcel })
-
-    expect(failedRules.length).toBe(0)
+    await expectRulesToPass([rules.notSSSI], { parcel })
   })
 })
 
 describe('Rule: Claimed perimeter <= actual perimeter', () => {
   const parcel = getParcelWithDefaults({ totalPerimeter: 75 })
   test('Passes when claimed perimeter is less than actual perimeter', async () => {
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.perimeter],
       { parcel, quantity: 50 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Passes when claimed perimeter equals actual perimeter', async () => {
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.perimeter],
       { parcel, quantity: 75 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Fails when claimed perimeter is greater than actual perimeter', async () => {
-    const failedRules = await runRules(
+    await expectRulesToFail(
       [rules.perimeter],
-      { parcel, quantity: 150 }
+      { parcel, quantity: 150 },
+      {
+        name: 'withinPerimeter',
+        description: 'Claimed perimeter should be less than the total perimeter',
+        expandedHint: 'The claimed perimeter of 150 should be within the range (0 to 75)',
+        inputBounds: { lower: 0, upper: 75 }
+      }
     )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules[0].name).toBe('withinPerimeter')
   })
 })
 
 describe('Rule: Claimed perimeter <= perimeter adjusted to take into account perimeter features', () => {
   test('Passes when there are no perimeter features and claimed perimeter less than perimeter', async () => {
     const parcel = getParcelWithDefaults({ totalPerimeter: 75 })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.adjustedPerimeter],
       { parcel, quantity: 40 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Passes when claimed perimeter is less than adjusted perimeter', async () => {
     const parcel = getParcelWithDefaults({
       totalPerimeter: 75,
       perimeterFeatures: [{ type: 'lake', length: 15 }]
     })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.adjustedPerimeter],
       { parcel, quantity: 40 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Passes when claimed perimeter is equal to adjusted perimeter', async () => {
     const parcel = getParcelWithDefaults({
       totalPerimeter: 75,
       perimeterFeatures: [{ type: 'lake', length: 15 }]
     })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.adjustedPerimeter],
       { parcel, quantity: 60 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Fails when claimed perimeter is greater than adjusted perimeter', async () => {
     const parcel = getParcelWithDefaults({
       totalPerimeter: 75,
       perimeterFeatures: [{ type: 'lake', length: 15 }]
     })
-    const failedRules = await runRules(
+    await expectRulesToFail(
       [rules.adjustedPerimeter],
-      { parcel, quantity: 61 }
+      { parcel, quantity: 61 },
+      {
+        name: 'withinAdjustedPerimeter',
+        description: 'Claimed perimeter should be less than the perimeter adjusted for perimeter features',
+        expandedHint: 'The claimed perimeter of 61 should be within the range adjusted for perimeter features (0 to 60)',
+        inputBounds: { lower: 0, upper: 60 }
+      }
     )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules[0].name).toBe('withinAdjustedPerimeter')
   })
 })
 
 describe('Rule: Claimed perimeter <= perimeter (within accepted tolerance)', () => {
   const parcel = getParcelWithDefaults({ totalPerimeter: 75 })
   test('Passes when claimed perimeter is less than actual perimeter (allowing for tolerance)', async () => {
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.tolerancePerimeter],
       { parcel, quantity: 76, tolerance: 2 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Passes when claimed perimeter is less than actual perimeter (despite tolerance)', async () => {
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.tolerancePerimeter],
       { parcel, quantity: 50, tolerance: 2 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Passes when claimed perimeter is equal to actual perimeter (allowing for tolerance)', async () => {
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.tolerancePerimeter],
       { parcel, quantity: 77, tolerance: 2 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Fails when claimed perimeter is greater than actual perimeter (allowing for tolerance)', async () => {
-    const failedRules = await runRules(
+    await expectRulesToFail(
       [rules.tolerancePerimeter],
-      { parcel, quantity: 78, tolerance: 2 }
+      { parcel, quantity: 78, tolerance: 2 },
+      {
+        name: 'withinTolerancePerimeter',
+        description: 'Perimeter should be within tolerance',
+        expandedHint: null,
+        inputBounds: {}
+      }
     )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules[0].name).toBe('withinTolerancePerimeter')
   })
 })
 
@@ -218,74 +228,70 @@ describe('Rule: Cultivated land', () => {
   test('cultivatedParcel passes when parcel is arable land', async () => {
     const arableLandCode = 110
     const parcel = getParcelWithDefaults({ landCoverClass: arableLandCode })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.cultivatedParcel],
       { parcel }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('cultivatedParcel passes when parcel is cultivated & managed', async () => {
     const cultivatedAndManagedCode = 670
     const parcel = getParcelWithDefaults({ landCoverClass: cultivatedAndManagedCode })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.cultivatedParcel],
       { parcel }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('cultivatedParcel fails when parcel is not cultivated', async () => {
     const randomNonCultivatedClass = 0
     const parcel = getParcelWithDefaults({ landCoverClass: randomNonCultivatedClass })
-    const failedRules = await runRules(
+    await expectRulesToFail(
       [rules.cultivatedParcel],
-      { parcel }
+      { parcel },
+      {
+        name: 'cultivated',
+        description: 'Parcel should be a cultivated parcel',
+        expandedHint: null,
+        inputBounds: {}
+      }
     )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules[0].name).toBe('cultivated')
   })
 })
 
 describe('Rule: Claimed area <= actual area', () => {
   const parcel = getParcelWithDefaults({ totalArea: 75 })
   test('Passes when claimed area is less than actual area', async () => {
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.area],
       { parcel, quantity: 50 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Passes when claimed area equals actual area', async () => {
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.area],
       { parcel, quantity: 75 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Fails when claimed area is greater than actual area', async () => {
-    const failedRules = await runRules(
+    await expectRulesToFail(
       [rules.area],
-      { parcel, quantity: 150 }
+      { parcel, quantity: 150 },
+      {
+        name: 'withinArea',
+        description: 'Claimed area should be less than the total area',
+        expandedHint: 'The claimed area of 150 should be within the range (0 to 75)',
+        inputBounds: { lower: 0, upper: 75 }
+      }
     )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules[0].name).toBe('withinArea')
   })
 })
 
 describe('Rule: Claimed area <= area adjusted to take into account area features', () => {
   test('Passes when there are no area features and claimed area less than area', async () => {
     const parcel = getParcelWithDefaults({ totalArea: 75 })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.pondlessArea],
       { parcel, quantity: 40 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Passes when claimed area is less than adjusted area', async () => {
     const parcel = getParcelWithDefaults({
@@ -297,12 +303,10 @@ describe('Rule: Claimed area <= area adjusted to take into account area features
         }
       ]
     })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.pondlessArea],
       { parcel, quantity: 40 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Passes when claimed area is equal to adjusted area', async () => {
     const parcel = getParcelWithDefaults({
@@ -314,12 +318,10 @@ describe('Rule: Claimed area <= area adjusted to take into account area features
         }
       ]
     })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.pondlessArea],
       { parcel, quantity: 72 }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Fails when claimed area is greater than adjusted area', async () => {
     const parcel = getParcelWithDefaults({
@@ -331,33 +333,44 @@ describe('Rule: Claimed area <= area adjusted to take into account area features
         }
       ]
     })
-    const failedRules = await runRules(
+    await expectRulesToFail(
       [rules.pondlessArea],
-      { parcel, quantity: 74 }
+      { parcel, quantity: 74 },
+      {
+        name: 'withinPondlessArea',
+        description: 'Claimed area should be less than the area adjusted for ponds',
+        expandedHint: 'The claimed area of 74 should be within the range adjusted for ponds (0 to 72)',
+        inputBounds: { lower: 0, upper: 72 }
+      }
     )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules[0].name).toBe('withinPondlessArea')
   })
 })
 
 describe('Rule: Has reintroduced grazing', () => {
   test('Passes when parcel has reintroduced grazing', async () => {
     const parcel = getParcelWithDefaults({ hasReintroducedGrazing: true })
-    const failedRules = await runRules([rules.hasReintroducedGrazing], { parcel })
-
-    expect(failedRules.length).toBe(0)
+    await expectRulesToPass([rules.hasReintroducedGrazing], { parcel })
   })
   test('Fails when parcel has not reintroduced grazing', async () => {
     const parcel = getParcelWithDefaults({ hasReintroducedGrazing: false })
-    const failedRules = await runRules([rules.hasReintroducedGrazing], { parcel })
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules[0].name).toBe('hasReintroducedGrazing')
+    await expectRulesToFail(
+      [rules.hasReintroducedGrazing],
+      { parcel },
+      {
+        name: 'hasReintroducedGrazing',
+        description: 'Grazing has been reintroduced for the parcel',
+        expandedHint: null,
+        inputBounds: {}
+      }
+    )
   })
 })
 
 describe('Combination rules', () => {
+  const expectCombinationRulesToFail = async (rules, options, failedRuleNames) => {
+    const failedRules = await runRules(rules, options)
+    expect(failedRules.map(r => r.name)).toEqual(failedRuleNames)
+  }
   test('Passes when both time period and perimeter rules pass', async () => {
     const parcel = getParcelWithDefaults({
       totalPerimeter: 75,
@@ -368,7 +381,7 @@ describe('Combination rules', () => {
         }
       ]
     })
-    const failedRules = await runRules(
+    await expectRulesToPass(
       [rules.perimeter, rules.noActionsInTimePeriod],
       {
         parcel,
@@ -377,8 +390,6 @@ describe('Combination rules', () => {
         actionYearsThreshold: 2
       }
     )
-
-    expect(failedRules.length).toBe(0)
   })
   test('Fails when only time period passes', async () => {
     const parcel = getParcelWithDefaults({
@@ -390,7 +401,7 @@ describe('Combination rules', () => {
         }
       ]
     })
-    const failedRules = await runRules(
+    await expectCombinationRulesToFail(
       [rules.perimeter, rules.noActionsInTimePeriod],
       {
         parcel,
@@ -398,11 +409,9 @@ describe('Combination rules', () => {
         quantity: 500,
         actionYearsThreshold: 2,
         referenceDate: moment('2020-01-25')
-      }
+      },
+      ['withinPerimeter']
     )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules[0].name).toBe('withinPerimeter')
   })
   test('Fails when only perimeter rule passes', async () => {
     const parcel = getParcelWithDefaults({
@@ -414,7 +423,7 @@ describe('Combination rules', () => {
         }
       ]
     })
-    const failedRules = await runRules(
+    await expectCombinationRulesToFail(
       [rules.perimeter, rules.noActionsInTimePeriod],
       {
         parcel,
@@ -422,11 +431,9 @@ describe('Combination rules', () => {
         quantity: 50,
         actionYearsThreshold: 5,
         referenceDate: moment('2020-01-25')
-      }
+      },
+      ['noActionsInTimePeriod']
     )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules[0].name).toBe('noActionsInTimePeriod')
   })
 })
 
@@ -720,177 +727,20 @@ describe('Requested facts are appended to the response object', () => {
 describe('Rule: Water pollution reduction zone', () => {
   test('Passes when parcel is in a water pollution reduction zone', async () => {
     const parcel = getParcelWithDefaults({ inWaterPollutionZone: true })
-    const failedRules = await runRules([rules.inWaterPollutionZone], { parcel })
-
-    expect(failedRules.length).toBe(0)
+    await expectRulesToPass([rules.inWaterPollutionZone], { parcel })
   })
 
   test('Fails when parcel is not in a water pollution reduction zone', async () => {
     const parcel = getParcelWithDefaults({ inWaterPollutionZone: false })
-    const failedRules = await runRules([rules.inWaterPollutionZone], { parcel })
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules[0].name).toBe('inWaterPollutionZone')
-  })
-})
-
-describe('Get failed rules with reasons', () => {
-  test('Perimeter', async () => {
-    const parcel = getParcelWithDefaults({
-      totalPerimeter: 75
-    })
-
-    const failedRules = await runRules(
-      [rules.perimeter],
-      { parcel, quantity: -1 }
-    )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules).toContainEqual({
-      name: 'withinPerimeter',
-      description: 'Claimed perimeter should be less than the total perimeter',
-      expandedHint: 'The claimed perimeter of -1 should be within the range (0 to 75)',
-      inputBounds: { lower: 0, upper: 75 }
-    })
-  })
-  test('Adjusted perimeter', async () => {
-    const parcel = getParcelWithDefaults({
-      totalPerimeter: 75,
-      perimeterFeatures: [
-        {
-          type: 'lake',
-          length: 15
-        }
-      ]
-    })
-
-    const failedRules = await runRules(
-      [rules.adjustedPerimeter],
-      { parcel, quantity: -1 }
-    )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules).toContainEqual({
-      name: 'withinAdjustedPerimeter',
-      description: 'Claimed perimeter should be less than the perimeter adjusted for perimeter features',
-      expandedHint: 'The claimed perimeter of -1 should be within the range adjusted for perimeter features (0 to 60)',
-      inputBounds: { lower: 0, upper: 60 }
-    })
-  })
-  test('Area', async () => {
-    const parcel = getParcelWithDefaults({
-      totalArea: 75
-    })
-
-    const failedRules = await runRules(
-      [rules.area],
-      { parcel, quantity: -1 }
-    )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules).toContainEqual({
-      name: 'withinArea',
-      description: 'Claimed area should be less than the total area',
-      expandedHint: 'The claimed area of -1 should be within the range (0 to 75)',
-      inputBounds: { lower: 0, upper: 75 }
-    })
-  })
-  test('Adjusted Area', async () => {
-    const parcel = getParcelWithDefaults({
-      totalArea: 75,
-      areaFeatures: [
-        {
-          type: 'pond',
-          areaCovered: 3
-        }
-      ]
-    })
-
-    const failedRules = await runRules(
-      [rules.pondlessArea],
-      { parcel, quantity: -1 }
-    )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules).toContainEqual({
-      name: 'withinPondlessArea',
-      description: 'Claimed area should be less than the area adjusted for ponds',
-      expandedHint: 'The claimed area of -1 should be within the range adjusted for ponds (0 to 72)',
-      inputBounds: { lower: 0, upper: 72 }
-    })
-  })
-  test('Not in SSSI', async () => {
-    const parcel = getParcelWithDefaults({
-      sssi: true
-    })
-
-    const failedRules = await runRules(
-      [rules.notSSSI],
-      { parcel }
-    )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules).toContainEqual({
-      name: 'notSSSI',
-      description: 'Parcel should not be in an SSSI',
-      expandedHint: null,
-      inputBounds: {}
-    })
-  })
-  test('No actions in time period', async () => {
-    const parcel = getParcelWithDefaults({
-      previousActions: [
-        { date: '2018-01-25', identifier: 'FG1' }
-      ]
-    })
-
-    const failedRules = await runRules(
-      [rules.noActionsInTimePeriod],
-      { parcel, actionId: 'FG1', actionYearsThreshold: 5, referenceDate: moment('2021-01-25') }
-    )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules).toContainEqual({
-      name: 'noActionsInTimePeriod',
-      description: 'Parcel should not have had any recent previous actions of this type',
-      expandedHint: 'Parcel rejected because there was an action of type FG1 in the last 5 years',
-      inputBounds: {}
-    })
-  })
-  test('Not in water pollution zone', async () => {
-    const parcel = getParcelWithDefaults({
-      inWaterPollutionZone: false
-    })
-
-    const failedRules = await runRules(
+    await expectRulesToFail(
       [rules.inWaterPollutionZone],
-      { parcel }
+      { parcel },
+      {
+        name: 'inWaterPollutionZone',
+        description: 'Parcel should be in a water pollution zone',
+        expandedHint: null,
+        inputBounds: {}
+      }
     )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules).toContainEqual({
-      name: 'inWaterPollutionZone',
-      description: 'Parcel should be in a water pollution zone',
-      expandedHint: null,
-      inputBounds: {}
-    })
-  })
-  test('Not in cultivated land cover class', async () => {
-    const parcel = getParcelWithDefaults({
-      landCoverClass: 999
-    })
-
-    const failedRules = await runRules(
-      [rules.cultivatedParcel],
-      { parcel }
-    )
-
-    expect(failedRules.length).toBe(1)
-    expect(failedRules).toContainEqual({
-      name: 'cultivated',
-      description: 'Parcel should be a cultivated parcel',
-      expandedHint: null,
-      inputBounds: {}
-    })
   })
 })
