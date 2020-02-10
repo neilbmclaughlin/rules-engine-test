@@ -15,24 +15,26 @@ const parcel = {
   totalPerimeter: 75
 }
 
+function consoleLog (obj) {
+  console.log(util.inspect(obj, { depth: 8 }))
+}
+
 allRulesPass([rules.perimeter, rules.notSSSI], { parcel, quantity: 50 })
-  .then((result) => console.log({ result }))
+  .then((result) => consoleLog({ result }))
 
 runEngine([rules.perimeter, rules.notSSSI], { parcel, quantity: 50 })
   .then((results) => {
-    console.log({ events: results.events })
+    consoleLog({ events: results.events })
   })
 
 getEngine([rules.perimeter, rules.notSSSI])
   .on('success', (event, almanac, ruleResult) => {
-    console.log({ status: 'success', event, ruleResult })
+    consoleLog({ status: 'success', event, ruleResult })
   })
   .on('failure', (event, almanac, ruleResult) => {
-    console.log({ status: 'failed', event, ruleResult })
+    consoleLog({ status: 'failed', event, ruleResult })
   })
   .run({ parcel, quantity: 50 })
 
 runRules([rules.perimeter, rules.notSSSI], { parcel, quantity: 150 })
-  .then((results) => {
-    console.log(util.inspect(results, { depth: 8 }))
-  })
+  .then((results) => { consoleLog(results) })
