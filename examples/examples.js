@@ -1,4 +1,6 @@
-const { allRulesPass, runEngine, getEngine, rules } = require('../ffc-rules-engine')
+const util = require('util')
+
+const { allRulesPass, runEngine, runRules, getEngine, rules } = require('../ffc-rules-engine')
 
 const parcel = {
   areaFeatures: [],
@@ -29,3 +31,8 @@ getEngine([rules.perimeter, rules.notSSSI])
     console.log({ status: 'failed', event, ruleResult })
   })
   .run({ parcel, quantity: 50 })
+
+runRules([rules.perimeter, rules.notSSSI], { parcel, quantity: 150 })
+  .then((results) => {
+    console.log(util.inspect(results, { depth: 8 }))
+  })
